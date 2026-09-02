@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calendario Institucional</title>
+  <title>Calendario Institucional - Multi-Dispositivo</title>
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -49,12 +49,12 @@
   </style>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen antialiased selection:bg-brand-500 selection:text-white">
+
   <div id="root"></div>
 
   <script type="text/babel">
     const { useState, useEffect, useMemo, useRef } = React;
 
-    // --- ICONOS NATIVOS EN SVG PARA GARANTIZAR FUNCIONAMIENTO SIN ERRORES EN RED ---
     const Icon = ({ name, className = "w-5 h-5", ...props }) => {
       const icons = {
         calendar: (
@@ -138,9 +138,19 @@
             <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline>
           </svg>
         ),
-        list: (
+        refresh: (
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
-            <line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line>
+            <polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+        ),
+        code: (
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
+            <polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline>
+          </svg>
+        ),
+        wifi: (
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
+            <path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line>
           </svg>
         )
       };
@@ -157,7 +167,6 @@
     const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
     const DIAS_SEMANA = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
-    // Categorías Iniciales por Defecto
     const CATEGORIAS_DEFAULT = {
       jornada: { id: 'jornada', nombre: 'Jornada Institucional', hex: '#8b5cf6' },
       cierre: { id: 'cierre', nombre: 'Cierre de Notas', hex: '#ef4444' },
@@ -168,7 +177,6 @@
       otro: { id: 'otro', nombre: 'Actividad General', hex: '#64748b' }
     };
 
-    // Eventos Semilla para Demostración Inmediata
     const EVENTOS_SEMILLA = [
       {
         id: 'ev-1',
@@ -217,11 +225,14 @@
       const [supabaseUrl, setSupabaseUrl] = useState(() => localStorage.getItem('sp_url') || '');
       const [supabaseAnonKey, setSupabaseAnonKey] = useState(() => localStorage.getItem('sp_key') || '');
       const [supabaseClient, setSupabaseClient] = useState(null);
-      const [user, setUser] = useState(null);
+      const [cargandoNube, setCargandoNube] = useState(false);
+
+      // Canal de transmisión local para sincronización instantánea entre pestañas/ventanas
+      const broadcastChannelRef = useRef(null);
 
       // Estado Principal de Datos
       const [currentDate, setCurrentDate] = useState(new Date());
-      const [vistaModo, setVistaModo] = useState('mes'); // 'mes', 'semana', 'lista'
+      const [vistaModo, setVistaModo] = useState('mes'); // 'mes', 'lista'
       
       const [eventos, setEventos] = useState(() => {
         const local = localStorage.getItem('inst_eventos');
@@ -234,7 +245,7 @@
       });
 
       const [notasRapidas, setNotasRapidas] = useState(() => {
-        return localStorage.getItem('inst_notas') 
+        return localStorage.getItem('inst_notas') || "• Entregar planificaciones el viernes.\n• Consultar listas de asistencia.";
       });
 
       // Filtros
@@ -252,49 +263,125 @@
       const [eventoAEliminar, setEventoAEliminar] = useState(null);
       const [notificacion, setNotificacion] = useState(null);
 
-      // Guardar localmente cada vez que cambien eventos, categorías o notas
-      useEffect(() => {
-        if (!modoSupabase) {
-          localStorage.setItem('inst_eventos', JSON.stringify(eventos));
-        }
-      }, [eventos, modoSupabase]);
-
-      useEffect(() => {
-        if (!modoSupabase) {
-          localStorage.setItem('inst_categorias', JSON.stringify(categoriasMap));
-        }
-      }, [categoriasMap, modoSupabase]);
-
-      useEffect(() => {
-        localStorage.setItem('inst_notas', notasRapidas);
-      }, [notasRapidas]);
-
       const mostrarNotificacion = (texto, tipo = 'exito') => {
         setNotificacion({ texto, tipo });
         setTimeout(() => setNotificacion(null), 4000);
       };
 
+      // Inicializar BroadcastChannel para sincronizar entre pestañas sin recargar
+      useEffect(() => {
+        if ('BroadcastChannel' in window) {
+          const bc = new BroadcastChannel('calendario_institucional_sync');
+          broadcastChannelRef.current = bc;
+          bc.onmessage = (event) => {
+            if (event.data?.type === 'SYNC_EVENTOS') {
+              setEventos(event.data.payload);
+            } else if (event.data?.type === 'SYNC_CATEGORIAS') {
+              setCategoriasMap(event.data.payload);
+            }
+          };
+          return () => bc.close();
+        }
+      }, []);
+
+      // Función para obtener eventos desde Supabase
+      const cargarDatosSupabase = async (client) => {
+        if (!client) return;
+        setCargandoNube(true);
+        try {
+          // Cargar Eventos
+          const { data: dataEv, error: errEv } = await client.from('eventos').select('*');
+          if (errEv) throw errEv;
+
+          if (dataEv && dataEv.length >= 0) {
+            const evsNormalizados = dataEv.map(item => ({
+              id: item.id,
+              titulo: item.titulo,
+              fecha: item.fecha,
+              horaInicio: item.hora_inicio || item.horaInicio || '',
+              horaFin: item.hora_fin || item.horaFin || '',
+              jornadaCompleta: item.jornada_completa ?? item.jornadaCompleta ?? false,
+              categoria: item.categoria,
+              ubicacion: item.ubicacion || '',
+              descripcion: item.descripcion || '',
+              importante: item.importante ?? false
+            }));
+            setEventos(evsNormalizados);
+            localStorage.setItem('inst_eventos', JSON.stringify(evsNormalizados));
+          }
+
+          // Cargar Categorías
+          const { data: dataCat, error: errCat } = await client.from('categorias').select('*');
+          if (!errCat && dataCat && dataCat.length > 0) {
+            const catMapObj = {};
+            dataCat.forEach(c => {
+              catMapObj[c.id] = { id: c.id, nombre: c.nombre, hex: c.hex };
+            });
+            setCategoriasMap(catMapObj);
+            localStorage.setItem('inst_categorias', JSON.stringify(catMapObj));
+          }
+        } catch (err) {
+          console.error("Error al sincronizar con Supabase:", err);
+          mostrarNotificacion("Aviso: No se pudo leer la tabla de Supabase. Verificá los nombres de tablas o tu conexión.", "error");
+        } finally {
+          setCargandoNube(false);
+        }
+      };
+
+      // Inicializar Cliente Supabase y Suscripción Realtime Multi-Computadora
       useEffect(() => {
         if (modoSupabase && supabaseUrl && supabaseAnonKey) {
           try {
             const client = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
             setSupabaseClient(client);
 
-            client.auth.getSession().then(({ data: { session } }) => {
-              setUser(session?.user ?? null);
-            });
+            // Cargar datos iniciales desde la nube
+            cargarDatosSupabase(client);
 
-            const { data: { subscription } } = client.auth.onAuthStateChange((_event, session) => {
-              setUser(session?.user ?? null);
-            });
+            // Escuchar cambios en TIEMPO REAL desde otras computadoras
+            const channel = client.channel('public:realtime_calendario')
+              .on('postgres_changes', { event: '*', schema: 'public', table: 'eventos' }, () => {
+                cargarDatosSupabase(client);
+              })
+              .on('postgres_changes', { event: '*', schema: 'public', table: 'categorias' }, () => {
+                cargarDatosSupabase(client);
+              })
+              .subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                  console.log("Suscripción en tiempo real activa para sincronización multi-dispositivo.");
+                }
+              });
 
-            return () => subscription.unsubscribe();
+            return () => {
+              client.removeChannel(channel);
+            };
           } catch (err) {
             console.error("Error al iniciar cliente Supabase:", err);
             mostrarNotificacion("Error al conectar con Supabase. Revisa las credenciales.", "error");
           }
+        } else {
+          setSupabaseClient(null);
         }
       }, [modoSupabase, supabaseUrl, supabaseAnonKey]);
+
+      // Guardar localmente y transmitir localmente cada vez que cambien eventos
+      useEffect(() => {
+        localStorage.setItem('inst_eventos', JSON.stringify(eventos));
+        if (broadcastChannelRef.current) {
+          broadcastChannelRef.current.postMessage({ type: 'SYNC_EVENTOS', payload: eventos });
+        }
+      }, [eventos]);
+
+      useEffect(() => {
+        localStorage.setItem('inst_categorias', JSON.stringify(categoriasMap));
+        if (broadcastChannelRef.current) {
+          broadcastChannelRef.current.postMessage({ type: 'SYNC_CATEGORIAS', payload: categoriasMap });
+        }
+      }, [categoriasMap]);
+
+      useEffect(() => {
+        localStorage.setItem('inst_notas', notasRapidas);
+      }, [notasRapidas]);
 
       // Guardar Credenciales Supabase
       const guardarCredencialesSupabase = (e) => {
@@ -304,7 +391,7 @@
         localStorage.setItem('sp_enabled', 'true');
         setModoSupabase(true);
         setModalConfigAbierto(false);
-        mostrarNotificacion("Credenciales de Supabase guardadas correctamente.");
+        mostrarNotificacion("Credenciales guardadas. Conectando con la nube...");
       };
 
       const desactivarSupabase = () => {
@@ -314,42 +401,91 @@
         mostrarNotificacion("Cambiado a Modo Local (Sin nube).");
       };
 
-      const handleGuardarEvento = (datosEvento, nuevaCategoriaObj = null) => {
+      const handleGuardarEvento = async (datosEvento, nuevaCategoriaObj = null) => {
         let catIdFinal = datosEvento.categoria;
 
         // Si creó una categoría al vuelo en el formulario
         if (nuevaCategoriaObj) {
           const newId = 'cat-' + Date.now();
           const nuevaCat = { id: newId, nombre: nuevaCategoriaObj.nombre, hex: nuevaCategoriaObj.hex };
-          setCategoriasMap(prev => ({ ...prev, [newId]: nuevaCat }));
+          const nuevosCats = { ...categoriasMap, [newId]: nuevaCat };
+          setCategoriasMap(nuevosCats);
           catIdFinal = newId;
+
+          // Guardar categoría en Supabase si está activo
+          if (supabaseClient) {
+            try {
+              await supabaseClient.from('categorias').upsert({
+                id: newId,
+                nombre: nuevaCat.nombre,
+                hex: nuevaCat.hex
+              });
+            } catch (e) {
+              console.error("Error guardando categoría en Supabase", e);
+            }
+          }
         }
+
+        const evId = datosEvento.id || 'ev-' + Date.now();
+        const eventoAlineado = {
+          ...datosEvento,
+          id: evId,
+          categoria: catIdFinal
+        };
 
         if (datosEvento.id) {
           // Edición
-          setEventos(prev => prev.map(ev => ev.id === datosEvento.id ? { ...datosEvento, categoria: catIdFinal } : ev));
+          setEventos(prev => prev.map(ev => ev.id === datosEvento.id ? eventoAlineado : ev));
           mostrarNotificacion("Evento actualizado con éxito.");
         } else {
           // Nuevo
-          const nuevoEv = {
-            ...datosEvento,
-            id: 'ev-' + Date.now(),
-            categoria: catIdFinal
-          };
-          setEventos(prev => [nuevoEv, ...prev]);
+          setEventos(prev => [eventoAlineado, ...prev]);
           mostrarNotificacion("Evento creado con éxito.");
+        }
+
+        // Sincronizar en la nube Supabase para que todos lo vean
+        if (supabaseClient) {
+          try {
+            await supabaseClient.from('eventos').upsert({
+              id: evId,
+              titulo: eventoAlineado.titulo,
+              fecha: eventoAlineado.fecha,
+              hora_inicio: eventoAlineado.horaInicio || '',
+              hora_fin: eventoAlineado.horaFin || '',
+              jornada_completa: eventoAlineado.jornadaCompleta,
+              categoria: eventoAlineado.categoria,
+              ubicacion: eventoAlineado.ubicacion || '',
+              descripcion: eventoAlineado.descripcion || '',
+              importante: eventoAlineado.importante
+            });
+            mostrarNotificacion("Sincronizado en todas las computadoras ✓");
+          } catch (err) {
+            console.error("Error al enviar evento a Supabase:", err);
+          }
         }
 
         setModalNuevoAbierto(false);
         setEventoEditar(null);
       };
 
-      const handleEliminarEvento = () => {
+      const handleEliminarEvento = async () => {
         if (!eventoAEliminar) return;
-        setEventos(prev => prev.filter(ev => ev.id !== eventoAEliminar.id));
+        const targetId = eventoAEliminar.id;
+        setEventos(prev => prev.filter(ev => ev.id !== targetId));
+
+        if (supabaseClient) {
+          try {
+            await supabaseClient.from('eventos').delete().eq('id', targetId);
+            mostrarNotificacion("Evento eliminado en todas las computadoras.");
+          } catch (err) {
+            console.error("Error eliminando en Supabase:", err);
+          }
+        } else {
+          mostrarNotificacion("Evento eliminado.");
+        }
+
         setEventoAEliminar(null);
         setEventoSeleccionado(null);
-        mostrarNotificacion("Evento eliminado.");
       };
 
       // Navegación de Fechas
@@ -452,6 +588,7 @@
             </div>
           )}
 
+          {}
           {/* ENCABEZADO INSTITUCIONAL */}
           <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -460,13 +597,31 @@
                   <Icon name="school" className="w-6 h-6" />
                 </div>
                 <div>
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-brand-600">Gestión Educativa</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-brand-600">Gestión Educativa</span>
+                    {modoSupabase && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                        <Icon name="wifi" className="w-3 h-3" /> Red Compartida Activa
+                      </span>
+                    )}
+                  </div>
                   <h1 className="text-xl font-bold text-slate-900 leading-tight">Calendario Institucional</h1>
                 </div>
               </div>
 
               {/* Botones Modo & Nube */}
               <div className="flex items-center space-x-2">
+                {modoSupabase && (
+                  <button
+                    onClick={() => cargarDatosSupabase(supabaseClient)}
+                    disabled={cargandoNube}
+                    className="p-2 text-slate-600 hover:text-brand-600 hover:bg-slate-100 rounded-lg transition"
+                    title="Forzar actualización desde la nube"
+                  >
+                    <Icon name="refresh" className={`w-4 h-4 ${cargandoNube ? 'animate-spin text-brand-600' : ''}`} />
+                  </button>
+                )}
+
                 <button 
                   onClick={exportarEventosCSV}
                   className="px-3 py-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg flex items-center gap-1.5 transition"
@@ -485,12 +640,13 @@
                   }`}
                 >
                   <Icon name="database" className="w-4 h-4" />
-                  <span>{modoSupabase ? 'Supabase Conectado' : 'Modo Local (Offline)'}</span>
+                  <span>{modoSupabase ? 'Supabase Nube (Multi-PC)' : 'Modo Local (Offline)'}</span>
                 </button>
               </div>
             </div>
           </header>
 
+          {}
           {/* BARRA DE HERRAMIENTAS Y FILTROS */}
           <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3">
             <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
@@ -603,6 +759,7 @@
                 </div>
               </div>
 
+              {}
               {/* VISTA MES */}
               {vistaModo === 'mes' ? (
                 <div className="flex-1 p-3 sm:p-4">
@@ -745,6 +902,7 @@
               )}
             </div>
 
+            {}
             {/* SECCIÓN LATERAL DERECHA */}
             <div className="lg:col-span-1 space-y-6">
               
@@ -835,6 +993,7 @@
             </div>
           </main>
 
+          {}
           {/* MODAL: DETALLE DEL EVENTO */}
           {eventoSeleccionado && (
             <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
@@ -924,7 +1083,7 @@
                 </div>
 
                 <p className="text-xs text-slate-600 mb-4">
-                  Esta acción eliminará de forma permanente el evento <strong>"{eventoAEliminar.titulo}"</strong>.
+                  Esta acción eliminará el evento <strong>"{eventoAEliminar.titulo}"</strong> en todas las computadoras sincronizadas.
                 </p>
 
                 <div className="flex items-center justify-end space-x-2">
@@ -945,7 +1104,75 @@
             </div>
           )}
 
-          {/* MODAL: CREAR / EDITAR EVENTO */}
+          {}
+          {/* MODAL: INSTRUCCIONES / SQL SUPABASE */}
+          {modalSqlAbierto && (
+            <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-60 flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                  <div className="flex items-center space-x-2">
+                    <Icon name="code" className="w-5 h-5 text-brand-600" />
+                    <h3 className="text-base font-bold text-slate-800">Código SQL para Configurar Supabase</h3>
+                  </div>
+                  <button onClick={() => setModalSqlAbierto(false)} className="text-slate-400 hover:text-slate-600">
+                    <Icon name="x" className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <p className="text-xs text-slate-600 mb-3">
+                  Copiá y pegá este código en el <strong>SQL Editor</strong> de tu proyecto Supabase para crear automáticamente las tablas necesarias con permisos públicos y sincronización en tiempo real:
+                </p>
+
+                <pre className="bg-slate-900 text-slate-100 p-4 rounded-xl text-[11px] font-mono overflow-x-auto overflow-y-auto max-h-60 mb-4">
+{`-- 1. Crear Tabla de Eventos
+create table if not exists public.eventos (
+  id text primary key,
+  titulo text not null,
+  fecha text not null,
+  hora_inicio text,
+  hora_fin text,
+  jornada_completa boolean default false,
+  categoria text default 'otro',
+  ubicacion text,
+  descripcion text,
+  importante boolean default false
+);
+
+-- 2. Crear Tabla de Categorías
+create table if not exists public.categorias (
+  id text primary key,
+  nombre text not null,
+  hex text not null
+);
+
+-- 3. Habilitar Acceso Público (Lectura/Escritura)
+alter table public.eventos enable row level security;
+alter table public.categorias enable row level security;
+
+create policy "Permitir Todo Eventos" on public.eventos for all using (true) with check (true);
+create policy "Permitir Todo Categorias" on public.categorias for all using (true) with check (true);
+
+-- 4. Activar Tiempo Real (Realtime)
+alter publication supabase_realtime add table public.eventos;
+alter publication supabase_realtime add table public.categorias;`}
+                </pre>
+
+                <div className="mt-auto flex items-center justify-end">
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(`create table if not exists public.eventos (\n  id text primary key,\n  titulo text not null,\n  fecha text not null,\n  hora_inicio text,\n  hora_fin text,\n  jornada_completa boolean default false,\n  categoria text default 'otro',\n  ubicacion text,\n  descripcion text,\n  importante boolean default false\n);\n\ncreate table if not exists public.categorias (\n  id text primary key,\n  nombre text not null,\n  hex text not null\n);\n\nalter table public.eventos enable row level security;\nalter table public.categorias enable row level security;\n\ncreate policy "Permitir Todo Eventos" on public.eventos for all using (true) with check (true);\ncreate policy "Permitir Todo Categorias" on public.categorias for all using (true) with check (true);\n\nalter publication supabase_realtime add table public.eventos;\nalter publication supabase_realtime add table public.categorias;`);
+                      mostrarNotificacion("Código SQL copiado al portapapeles.");
+                    }}
+                    className="px-4 py-2 text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white rounded-xl transition"
+                  >
+                    Copiar SQL
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* CREAR / EDITAR EVENTO MODAL */}
           {modalNuevoAbierto && (
             <FormularioEvento 
               eventoInicial={eventoEditar} 
@@ -955,29 +1182,35 @@
             />
           )}
 
-          {/* MODAL: GESTIÓN DE COLORES Y CATEGORÍAS */}
+          {}
+          {/* GESTIÓN DE COLORES Y CATEGORÍAS MODAL */}
           {modalColoresAbierto && (
             <ModalGestionColores
               categoriasMap={categoriasMap}
               setCategoriasMap={setCategoriasMap}
+              supabaseClient={supabaseClient}
               mostrarNotificacion={mostrarNotificacion}
               onCerrar={() => setModalColoresAbierto(false)}
             />
           )}
 
-          {/* MODAL: CONFIGURACIÓN SUPABASE */}
+          {/* CONFIGURACIÓN SUPABASE MODAL */}
           {modalConfigAbierto && (
             <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
               <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
                   <div className="flex items-center space-x-2">
                     <Icon name="database" className="w-5 h-5 text-brand-600" />
-                    <h3 className="text-base font-bold text-slate-800">Conectar con Supabase (Nube)</h3>
+                    <h3 className="text-base font-bold text-slate-800">Conectar en Red Compartida (Supabase)</h3>
                   </div>
                   <button onClick={() => setModalConfigAbierto(false)} className="text-slate-400 hover:text-slate-600">
                     <Icon name="x" className="w-5 h-5" />
                   </button>
                 </div>
+
+                <p className="text-xs text-slate-500 mb-4">
+                  Ingresá la URL y la Llave Anónima de tu proyecto gratuito de Supabase para compartir el calendario en tiempo real con todas las computadoras de la institución.
+                </p>
 
                 <form onSubmit={guardarCredencialesSupabase} className="space-y-4">
                   <div>
@@ -1004,30 +1237,31 @@
                     />
                   </div>
 
-                  <div className="flex items-center justify-between pt-2">
-                    {modoSupabase ? (
-                      <button 
-                        type="button" 
-                        onClick={desactivarSupabase}
-                        className="text-xs text-red-600 font-semibold hover:underline"
-                      >
-                        Desactivar Nube
-                      </button>
-                    ) : <span />}
+                  <div className="pt-2 flex items-center justify-between border-t border-slate-100">
+                    <button
+                      type="button"
+                      onClick={() => setModalSqlAbierto(true)}
+                      className="text-xs text-brand-600 font-bold hover:underline flex items-center gap-1"
+                    >
+                      <Icon name="code" className="w-4 h-4" />
+                      <span>Ver Código SQL Tablas</span>
+                    </button>
 
                     <div className="flex space-x-2">
-                      <button 
-                        type="button" 
-                        onClick={() => setModalConfigAbierto(false)} 
-                        className="px-3 py-2 text-xs text-slate-600 font-medium"
-                      >
-                        Cancelar
-                      </button>
+                      {modoSupabase && (
+                        <button 
+                          type="button" 
+                          onClick={desactivarSupabase}
+                          className="px-3 py-2 text-xs text-red-600 font-semibold hover:bg-red-50 rounded-xl transition"
+                        >
+                          Desactivar
+                        </button>
+                      )}
                       <button 
                         type="submit" 
                         className="px-4 py-2 text-xs font-bold bg-brand-600 text-white rounded-xl hover:bg-brand-700 transition"
                       >
-                        Guardar Credenciales
+                        Conectar Nube
                       </button>
                     </div>
                   </div>
@@ -1038,7 +1272,7 @@
 
           {/* FOOTER */}
           <footer className="mt-auto border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-400">
-            <p>© 2026 Calendario Institucional Educativo • Sistema de Agenda Institucional</p>
+            <p>© 2026 Calendario Institucional Educativo • Sistema de Agenda Sincronizada en Red</p>
           </footer>
         </div>
       );
@@ -1262,14 +1496,14 @@
       );
     }
 
-    function ModalGestionColores({ categoriasMap, setCategoriasMap, mostrarNotificacion, onCerrar }) {
+    function ModalGestionColores({ categoriasMap, setCategoriasMap, supabaseClient, mostrarNotificacion, onCerrar }) {
       const [nombre, setNombre] = useState('');
       const [color, setColor] = useState('#2563eb');
       const [idEditando, setIdEditando] = useState(null);
       const [nombreEdit, setNombreEdit] = useState('');
       const [colorEdit, setColorEdit] = useState('#2563eb');
 
-      const handleCrearCategoria = (e) => {
+      const handleCrearCategoria = async (e) => {
         e.preventDefault();
         const nomLimpio = nombre.trim();
         if (!nomLimpio) return;
@@ -1278,12 +1512,21 @@
         const nuevaCat = { id: newId, nombre: nomLimpio, hex: color };
 
         setCategoriasMap(prev => ({ ...prev, [newId]: nuevaCat }));
+
+        if (supabaseClient) {
+          try {
+            await supabaseClient.from('categorias').upsert({ id: newId, nombre: nomLimpio, hex: color });
+          } catch (err) {
+            console.error("Error guardando categoría:", err);
+          }
+        }
+
         setNombre('');
         setColor('#2563eb');
         mostrarNotificacion("Categoría creada.");
       };
 
-      const handleGuardarEdicion = (id) => {
+      const handleGuardarEdicion = async (id) => {
         const nomLimpio = nombreEdit.trim();
         if (!nomLimpio) return;
 
@@ -1292,16 +1535,33 @@
           [id]: { ...prev[id], nombre: nomLimpio, hex: colorEdit }
         }));
 
+        if (supabaseClient) {
+          try {
+            await supabaseClient.from('categorias').upsert({ id, nombre: nomLimpio, hex: colorEdit });
+          } catch (err) {
+            console.error("Error actualizando categoría:", err);
+          }
+        }
+
         setIdEditando(null);
         mostrarNotificacion("Categoría actualizada.");
       };
 
-      const handleEliminarCategoria = (id) => {
+      const handleEliminarCategoria = async (id) => {
         setCategoriasMap(prev => {
           const copia = { ...prev };
           delete copia[id];
           return copia;
         });
+
+        if (supabaseClient) {
+          try {
+            await supabaseClient.from('categorias').delete().eq('id', id);
+          } catch (err) {
+            console.error("Error eliminando categoría:", err);
+          }
+        }
+
         mostrarNotificacion("Categoría eliminada.");
       };
 
