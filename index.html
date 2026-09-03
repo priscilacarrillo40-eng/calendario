@@ -221,9 +221,9 @@
 
     function App() {
       // Estado de Almacenamiento Local / Supabase
-      const [modoSupabase, setModoSupabase] = useState(() => localStorage.getItem('sp_enabled') === 'true');
-      const [supabaseUrl, setSupabaseUrl] = useState(() => localStorage.getItem('sp_url') || '');
-      const [supabaseAnonKey, setSupabaseAnonKey] = useState(() => localStorage.getItem('sp_key') || '');
+      const [modoSupabase, setModoSupabase] = useState(true);
+      const [supabaseUrl, setSupabaseUrl] = useState('https://xiaimoxljwmcrsorxxgx.supabase.co');
+      const [supabaseAnonKey, setSupabaseAnonKey] = useState('sb_publishable_XJ0_DSpsmQwahdKnSUhxHQ_9HfQFhSF');
       const [supabaseClient, setSupabaseClient] = useState(null);
       const [cargandoNube, setCargandoNube] = useState(false);
 
