@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calendario Institucional Compartido Mundialmente</title>
+  <title>Calendario Institucional Compartido</title>
 
   <!-- Google Fonts Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -50,7 +50,7 @@
       background-color: #f8fafc;
       color: #0f172a;
     }
-    /* Custom scrollbar for subtle aesthetic */
+    /* Scrollbar personalizada */
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
@@ -75,7 +75,7 @@
   <script type="text/babel">
     const { useState, useEffect, useMemo, useCallback } = React;
 
-    // Componente de Iconos SVG dinámicos sin librerías externas
+    // Componente de Iconos SVG dinámicos
     function Icon({ name, className = "w-4 h-4" }) {
       const icons = {
         calendar: (
@@ -203,7 +203,7 @@
       
       const [supabaseClient, setSupabaseClient] = useState(null);
       const [syncStatus, setSyncStatus] = useState('offline'); // 'online', 'syncing', 'offline', 'error'
-      const [mensajeSync, setMensajeSync] = useState('Modo Local (Configura Supabase para Red Mundial)');
+      const [mensajeSync, setMensajeSync] = useState('Almacenamiento Local (Configura Nube Supabase)');
 
       // Estado de Datos
       const [eventos, setEventos] = useState([]);
@@ -234,20 +234,20 @@
             const client = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
             setSupabaseClient(client);
             setSyncStatus('syncing');
-            setMensajeSync('Conectando con la Red Mundial...');
+            setMensajeSync('Conectando a la red compartida...');
           } catch (err) {
             console.error("Error iniciando Supabase:", err);
             setSyncStatus('error');
-            setMensajeSync('Error de Credenciales Supabase');
+            setMensajeSync('Error de credenciales en Supabase');
           }
         } else {
           setSupabaseClient(null);
           setSyncStatus('offline');
-          setMensajeSync('Modo Local (Sin sincronización mundial)');
+          setMensajeSync('Modo Local (Sin sincronización externa)');
         }
       }, [supabaseUrl, supabaseAnonKey]);
 
-      // Función para cargar datos de Supabase
+      // Cargar datos de Supabase
       const cargarDatosSupabase = useCallback(async () => {
         if (!supabaseClient) return;
 
@@ -292,18 +292,17 @@
           }
 
           setSyncStatus('online');
-          setMensajeSync('Sincronizado en Tiempo Real con la Red Mundial');
+          setMensajeSync('Sincronizado en tiempo real con la base compartida');
         } catch (err) {
           console.error("Error al sincronizar datos:", err);
           setSyncStatus('error');
-          setMensajeSync('Error de Red/Tabla. Revisa la consola o configuración');
+          setMensajeSync('Error de conexión o permisos RLS');
         }
       }, [supabaseClient]);
 
       // Efecto para Cargar Inicialmente y Suscribirse en Tiempo Real
       useEffect(() => {
         if (!supabaseClient) {
-          // Cargar datos locales de respaldo si no hay Supabase
           const localEvs = localStorage.getItem('local_eventos');
           if (localEvs) setEventos(JSON.parse(localEvs));
           const localNotas = localStorage.getItem('local_notas');
@@ -313,7 +312,7 @@
 
         cargarDatosSupabase();
 
-        // Suscripción Realtime a Cambios Mundiales
+        // Suscripción Realtime
         const canalEventos = supabaseClient
           .channel('public-realtime-changes')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'eventos' }, () => {
@@ -332,7 +331,7 @@
         };
       }, [supabaseClient, cargarDatosSupabase]);
 
-      // Guardar localmente cuando no hay Supabase
+      // Guardar localmente si no hay cliente Supabase
       useEffect(() => {
         if (!supabaseClient) {
           localStorage.setItem('local_eventos', JSON.stringify(eventos));
@@ -343,7 +342,6 @@
       const handleGuardarEvento = async (eventoData, nuevaCategoriaRapida) => {
         let catFinal = eventoData.categoria;
 
-        // Si creó una categoría al vuelo
         if (nuevaCategoriaRapida) {
           const newCatId = 'cat-' + Date.now();
           const objNuevaCat = { id: newCatId, nombre: nuevaCategoriaRapida.nombre, hex: nuevaCategoriaRapida.hex };
@@ -371,7 +369,6 @@
           categoria: catFinal
         };
 
-        // Actualizar Estado Local de inmediato
         setEventos(prev => {
           const existe = prev.some(e => e.id === idEvento);
           if (existe) {
@@ -384,7 +381,6 @@
         setModalNuevoAbierto(false);
         setEventoEditar(null);
 
-        // Sincronizar con Supabase en la Nube Global
         if (supabaseClient) {
           try {
             await supabaseClient.from('eventos').upsert({
@@ -402,7 +398,7 @@
             setSyncStatus('online');
           } catch (err) {
             console.error("Error en Supabase al guardar evento:", err);
-            alert("No se pudo enviar a la red mundial. Revisa la conexión y las políticas RLS.");
+            alert("No se pudo enviar la actualización a la base central. Revisa tu conexión.");
           }
         }
       };
@@ -483,19 +479,14 @@
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
 
-        // Primer día del mes
         const primerDiaMes = new Date(year, month, 1);
-        // Último día del mes
         const ultimoDiaMes = new Date(year, month + 1, 0);
 
-        // Día de la semana del primer día (0: Domingo, 1: Lunes...)
-        let diaSemanaInicio = primerDiaMes.getDay(); // 0-6
-        // Ajustar para que Lunes sea 0 y Domingo 6
+        let diaSemanaInicio = primerDiaMes.getDay();
         diaSemanaInicio = diaSemanaInicio === 0 ? 6 : diaSemanaInicio - 1;
 
         const dias = [];
 
-        // Días padding del mes anterior
         const diaAnterior = new Date(year, month, 0);
         const diasMesAnterior = diaAnterior.getDate();
 
@@ -504,13 +495,11 @@
           dias.push({ fecha: f, esMesActual: false });
         }
 
-        // Días del mes actual
         for (let i = 1; i <= ultimoDiaMes.getDate(); i++) {
           const f = new Date(year, month, i);
           dias.push({ fecha: f, esMesActual: true });
         }
 
-        // Días padding del mes siguiente para completar múltiplos de 7
         const totalPuntos = dias.length;
         const faltantes = (7 - (totalPuntos % 7)) % 7;
         for (let i = 1; i <= faltantes; i++) {
@@ -531,7 +520,7 @@
         });
       }, [eventos, filtroCategoria, busqueda]);
 
-      // Próximos eventos (ordenados a partir de hoy)
+      // Próximos eventos
       const proximosEventos = useMemo(() => {
         const hoyKey = formatDateKey(new Date());
         return eventos
@@ -540,7 +529,7 @@
           .slice(0, 5);
       }, [eventos]);
 
-      // Eventos marcados como importantes
+      // Eventos importantes
       const eventosImportantes = useMemo(() => {
         return eventos
           .filter(e => e.importante)
@@ -561,13 +550,13 @@
                 </div>
                 <div>
                   <h1 className="text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-                    Calendario Institucional 
+                    Calendario Institucional
                     <span className="text-[10px] px-2 py-0.5 bg-brand-50 text-brand-700 font-bold rounded-full border border-brand-200 uppercase tracking-wider">
-                      Red Mundial
+                      Red Compartida
                     </span>
                   </h1>
                   <p className="text-xs text-slate-500 font-medium">
-                    Sincronización global en tiempo real para todos los dispositivos
+                    Sincronización centralizada de eventos en tiempo real
                   </p>
                 </div>
               </div>
@@ -589,7 +578,7 @@
                   onClick={() => setModalConfigAbierto(true)}
                   className="ml-2 px-2 py-1 text-[11px] font-bold text-brand-700 hover:bg-brand-100 bg-brand-50 rounded-lg transition"
                 >
-                  {supabaseClient ? 'Configurar Nube' : 'Conectar Nube'}
+                  {supabaseClient ? 'Ajustes Nube' : 'Conectar Nube'}
                 </button>
               </div>
 
@@ -881,7 +870,7 @@
                 <textarea 
                   value={notasRapidas || ''}
                   onChange={(e) => handleNotasChange(e.target.value)}
-                  placeholder="Escribí recordatorios generales, pendientes de dirección, etc... Se compartirán globalmente."
+                  placeholder="Escribí recordatorios generales, pendientes de dirección, etc... Se compartirán con el equipo."
                   className="w-full h-28 bg-transparent text-xs text-slate-700 placeholder-slate-400 resize-none focus:outline-none"
                 />
               </div>
@@ -990,7 +979,7 @@
               <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                    <Icon name="globe" className="w-5 h-5 text-brand-600" /> Red Compartida Mundial (Supabase)
+                    <Icon name="globe" className="w-5 h-5 text-brand-600" /> Sincronización en la Nube (Supabase)
                   </h3>
                   <button onClick={() => setModalConfigAbierto(false)} className="text-slate-400 hover:text-slate-600">
                     <Icon name="x" className="w-5 h-5" />
@@ -998,7 +987,7 @@
                 </div>
 
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Ingresa la URL y la Clave Anon de tu proyecto en Supabase. Todos los dispositivos que tengan cargada esta misma configuración verán y editarán los eventos en tiempo real simultáneamente.
+                  Ingresa la URL y la Clave Anon de tu proyecto en Supabase para vincular este calendario a una base de datos compartida en tiempo real.
                 </p>
 
                 <form onSubmit={guardarCredencialesSupabase} className="space-y-3">
@@ -1031,7 +1020,7 @@
                       onClick={() => setModalSqlAbierto(true)}
                       className="text-xs text-brand-600 hover:underline flex items-center gap-1 font-semibold"
                     >
-                      <Icon name="code" className="w-4 h-4" /> Ver Tablas SQL necesarias
+                      <Icon name="code" className="w-4 h-4" /> Ver Esquema SQL de Tablas
                     </button>
 
                     <div className="flex items-center space-x-2">
@@ -1048,7 +1037,7 @@
                         type="submit" 
                         className="px-4 py-2 text-xs font-semibold bg-brand-600 hover:bg-brand-700 text-white rounded-xl shadow-md transition"
                       >
-                        Conectar Red Mundial
+                        Conectar Nube
                       </button>
                     </div>
                   </div>
@@ -1063,14 +1052,14 @@
               <div className="bg-slate-900 text-slate-100 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                   <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                    <Icon name="code" className="w-4 h-4 text-emerald-400" /> Esquema SQL Completo (Copiar e Inserte en SQL Editor de Supabase)
+                    <Icon name="code" className="w-4 h-4 text-emerald-400" /> Esquema SQL Completo (Copiar e Insertar en SQL Editor de Supabase)
                   </h3>
                   <button onClick={() => setModalSqlAbierto(false)} className="text-slate-400 hover:text-white">
                     <Icon name="x" className="w-5 h-5" />
                   </button>
                 </div>
                 <p className="text-xs text-slate-400">
-                  Copia y ejecuta todo este código en el **SQL Editor** de Supabase para activar la lectura y escritura pública en tiempo real:
+                  Ejecuta este código en el **SQL Editor** de tu proyecto Supabase para habilitar las tablas y permisos necesarios:
                 </p>
                 <pre className="bg-slate-950 p-4 rounded-xl text-[11px] font-mono text-emerald-400 overflow-x-auto border border-slate-800 leading-relaxed max-h-80">
 {`-- 1. Tabla de Eventos
@@ -1123,7 +1112,7 @@ CREATE POLICY "Acceso total a notas" ON notas FOR ALL USING (true) WITH CHECK (t
                 </div>
                 <h3 className="text-base font-bold text-slate-900">¿Eliminar este evento?</h3>
                 <p className="text-xs text-slate-500">
-                  Se borrará permanentemente "{eventoAEliminar.titulo}". Esta acción se sincronizará en todos los dispositivos conectados en el mundo.
+                  Se borrará permanentemente "{eventoAEliminar.titulo}". Si estás conectado a la nube, esta acción afectará a la base compartida.
                 </p>
                 <div className="flex items-center justify-center space-x-2 pt-2">
                   <button 
@@ -1159,7 +1148,6 @@ CREATE POLICY "Acceso total a notas" ON notas FOR ALL USING (true) WITH CHECK (t
       const [descripcion, setDescripcion] = useState(eventoEditar?.descripcion || '');
       const [importante, setImportante] = useState(eventoEditar?.importante ?? false);
 
-      // Estado para nueva categoría opcional
       const [crearCatNueva, setCrearCatNueva] = useState(false);
       const [nombreNuevaCat, setNombreNuevaCat] = useState('');
       const [hexNuevaCat, setHexNuevaCat] = useState('#3b82f6');
@@ -1236,7 +1224,6 @@ CREATE POLICY "Acceso total a notas" ON notas FOR ALL USING (true) WITH CHECK (t
                 </div>
               </div>
 
-              {/* OPCIÓN DE CATEGORÍA NUEVA EN EL MOMENTO */}
               {!crearCatNueva ? (
                 <button 
                   type="button" 
