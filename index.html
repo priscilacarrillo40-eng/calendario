@@ -1,34 +1,31 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="h-full bg-slate-100">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calendario Institucional Compartido</title>
-
-  <!-- Google Fonts Inter -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-  <!-- Tailwind CSS -->
+  <title>Calendario Institucional - Escuela San Martín</title>
+  
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FullCalendar v6 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/locales/es.global.min.js"></script>
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-          },
           colors: {
             brand: {
-              50: '#eff6ff',
-              100: '#dbeafe',
-              200: '#bfdbfe',
-              500: '#3b82f6',
-              600: '#2563eb',
-              700: '#1d4ed8',
-              800: '#1e40af',
-              900: '#1e3a8a',
+              50: '#f0f3ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81',
             }
           }
         }
@@ -36,1414 +33,909 @@
     }
   </script>
 
-  <!-- React 18, ReactDOM 18, Babel Standalone -->
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-  <!-- Supabase JS Client v2 CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: #f8fafc;
-      color: #0f172a;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+
+    /* Custom FullCalendar Soft Styling */
+    .fc {
+      --fc-border-color: #e2e8f0;
+      --fc-button-text-color: #334155;
+      --fc-button-bg-color: #ffffff;
+      --fc-button-border-color: #cbd5e1;
+      --fc-button-hover-bg-color: #f1f5f9;
+      --fc-button-hover-border-color: #94a3b8;
+      --fc-button-active-bg-color: #4f46e5;
+      --fc-button-active-border-color: #4f46e5;
+      --fc-button-active-text-color: #ffffff;
+      --fc-today-bg-color: #f0fdf4;
+      font-size: 0.875rem;
     }
-    /* Scrollbar personalizada */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+
+    .fc .fc-toolbar-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #1e293b;
+      text-transform: capitalize;
     }
-    ::-webkit-scrollbar-track {
-      background: #f1f5f9;
+
+    .fc .fc-button {
+      border-radius: 0.5rem;
+      font-weight: 500;
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      padding: 0.4rem 0.8rem;
     }
-    ::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 9999px;
+
+    .fc-event {
+      border: none !important;
+      border-radius: 6px !important;
+      padding: 2px 5px !important;
+      cursor: pointer;
+      font-size: 0.78rem !important;
+      font-weight: 500;
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
     }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
+
+    .fc-event:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     }
+
+    /* Category Badge Color Tokens */
+    .cat-jornada { background-color: #8b5cf6 !important; color: white !important; }
+    .cat-cierre { background-color: #ef4444 !important; color: white !important; }
+    .cat-acto { background-color: #f97316 !important; color: white !important; }
+    .cat-reunion { background-color: #3b82f6 !important; color: white !important; }
+    .cat-evaluacion { background-color: #10b981 !important; color: white !important; }
+    .cat-importante { background-color: #f59e0b !important; color: white !important; }
+    .cat-otro { background-color: #64748b !important; color: white !important; }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
   </style>
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-800 antialiased selection:bg-brand-500 selection:text-white">
+<body class="h-full flex flex-col antialiased text-slate-800">
 
-  <!-- Contenedor Principal React -->
-  <div id="root"></div>
+  <!-- Top Navigation Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        
+        <!-- Logo & Title -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center text-white font-bold text-xl shadow-md">
+            🏫
+          </div>
+          <div>
+            <span class="text-xs font-semibold uppercase tracking-wider text-brand-600 block leading-tight">Escuela San Martín</span>
+            <h1 class="text-lg font-bold text-slate-900 leading-tight">Calendario Institucional</h1>
+          </div>
+        </div>
 
-  <script type="text/babel">
-    const { useState, useEffect, useMemo, useCallback } = React;
+        <!-- User Actions & Info -->
+        <div class="flex items-center gap-3">
+          <!-- Notification Button -->
+          <button id="btn-notifications" title="Activar Notificaciones" class="p-2 text-slate-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition relative">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+            <span id="notif-badge" class="hidden absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+          </button>
 
-    // Servidor de sincronización compartida pública (JSONbin / Supabase)
-    const DEFAULT_SYNC_URL = "https://api.jsonbin.io/v3/b/65f000000000000000000000"; // Fallback de sincronización pública
+          <!-- DB Mode Indicator / Setup Button -->
+          <button id="btn-db-status" onclick="toggleConfigModal()" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 transition">
+            <span id="db-indicator-dot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span id="db-status-text">Persistencia Activa</span>
+          </button>
 
-    // Componente de Iconos SVG dinámicos
-    function Icon({ name, className = "w-4 h-4" }) {
-      const icons = {
-        calendar: (
-          <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-          </svg>
-        ),
-        clock: (
-          <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-        ),
-        school: (
-          <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V11m0 0l3-3m-3 3l-3-3"></path>
-          </svg>
-        ),
-        plus: (
-          <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-          </svg>
-        ),
-        x: (
-          <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        ),
-        edit: (
-          <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-          </svg>
-        ),
-        trash: (
-          <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-          </svg>
-        ),
-        palette: (
-          <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
-          </svg>
-        ),
-        database: (
-          <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8-4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
-          </svg>
-        ),
-        globe: (
-          <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
-          </svg>
-        ),
-        alertTriangle: (
-          <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-          </svg>
-        ),
-        stickyNote: (
-          <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-          </svg>
-        ),
-        code: (
-          <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
-          </svg>
-        ),
-        chevronLeft: (
-          <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path>
-          </svg>
-        ),
-        chevronRight: (
-          <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-          </svg>
-        ),
-        search: (
-          <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-        ),
-        refresh: (
-          <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-          </svg>
-        ),
-        check: (
-          <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-          </svg>
-        )
-      };
-      return icons[name] || null;
-    }
+          <!-- User Badge & Quick Switcher -->
+          <div class="flex items-center gap-2 pl-2 border-l border-slate-200">
+            <div class="text-right hidden sm:block">
+              <div id="user-name-display" class="text-xs font-semibold text-slate-800">Cargando...</div>
+              <div id="user-role-badge" class="text-[10px] font-bold uppercase tracking-wider text-brand-600 bg-brand-50 px-1.5 py-0.5 rounded inline-block">Profesor</div>
+            </div>
 
-    // Categorías por defecto
-    const CATEGORIAS_DEFAULT = {
-      reunion: { id: 'reunion', nombre: 'Reunión Directiva', hex: '#2563eb' },
-      academico: { id: 'academico', nombre: 'Actividad Académica', hex: '#059669' },
-      evaluacion: { id: 'evaluacion', nombre: 'Evaluaciones / Mesas', hex: '#d97706' },
-      feriado: { id: 'feriado', nombre: 'Feriado / Asueto', hex: '#dc2626' },
-      otro: { id: 'otro', nombre: 'Otro Evento', hex: '#7c3aed' }
+            <!-- Role Quick Switcher Dropdown -->
+            <select id="role-switcher" onchange="switchRole(this.value)" class="text-xs bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 focus:ring-2 focus:ring-brand-500 outline-none cursor-pointer">
+              <option value="admin">⚡ Modo Admin</option>
+              <option value="profesor">🎓 Modo Profesor</option>
+            </select>
+
+            <button onclick="logout()" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition" title="Cerrar Sesión">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <div class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+    <!-- Left Sidebar: Controls, Filters & Lists -->
+    <aside class="space-y-6 lg:col-span-1">
+
+      <!-- Action Button for Admins / Authorized Users -->
+      <button id="btn-create-event" onclick="openCreateModal()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-medium py-3 px-4 rounded-xl shadow-sm hover:shadow transition flex items-center justify-center gap-2 text-sm">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+        Nuevo Evento
+      </button>
+
+      <!-- Search & Filters Card -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-4">
+        <h3 class="font-bold text-xs uppercase tracking-wider text-slate-400">Búsqueda y Filtros</h3>
+        
+        <!-- Search Input -->
+        <div class="relative">
+          <input type="text" id="search-input" onkeyup="filterEvents()" placeholder="Buscar evento..." class="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none bg-slate-50">
+          <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </div>
+
+        <!-- Filter Category -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Categoría</label>
+          <select id="filter-category" onchange="filterEvents()" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none bg-slate-50">
+            <option value="all">Todas las categorías</option>
+            <option value="jornada">🟣 Jornada institucional</option>
+            <option value="cierre">🔴 Cierre de notas</option>
+            <option value="acto">🟠 Acto escolar</option>
+            <option value="reunion">🔵 Reunión</option>
+            <option value="evaluacion">🟢 Evaluación</option>
+            <option value="importante">🟡 Fecha importante</option>
+            <option value="otro">⚪ Otro</option>
+          </select>
+        </div>
+
+        <!-- Filter Importance Switcher -->
+        <div class="flex items-center justify-between pt-1">
+          <span class="text-xs font-semibold text-slate-600">Solo importantes 🚨</span>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="filter-important" onchange="filterEvents()" class="sr-only peer">
+            <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Highlighted Important Events Panel -->
+      <div class="bg-gradient-to-br from-red-50 to-amber-50 p-4 rounded-xl border border-red-200 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-bold text-xs uppercase tracking-wider text-red-800 flex items-center gap-1.5">
+            <span>🚨</span> Eventos Importantes
+          </h3>
+          <span id="important-count" class="bg-red-200 text-red-800 text-[10px] font-extrabold px-2 py-0.5 rounded-full">0</span>
+        </div>
+        <div id="important-events-list" class="space-y-2 max-h-64 overflow-y-auto pr-1">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <!-- Upcoming Events Panel -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <h3 class="font-bold text-xs uppercase tracking-wider text-slate-400 mb-3">Próximos 7 Días</h3>
+        <div id="upcoming-events-list" class="space-y-2 max-h-64 overflow-y-auto pr-1">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- Main Calendar Grid Area -->
+    <main class="lg:col-span-3 bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+      <div id="calendar" class="flex-1 min-h-[600px]"></div>
+    </main>
+
+  </div>
+
+  <!-- MODAL: Event Form (Create / Edit) -->
+  <div id="modal-event-form" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all border border-slate-100">
+      
+      <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+        <h3 id="modal-form-title" class="font-bold text-slate-800 text-lg">Nuevo Evento Institucional</h3>
+        <button onclick="closeModal('modal-event-form')" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      </div>
+
+      <form id="event-form" onsubmit="handleSaveEvent(event)" class="p-6 space-y-4">
+        <input type="hidden" id="form-event-id">
+
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Título del Evento *</label>
+          <input type="text" id="form-title" required placeholder="Ej: Jornada Pedagógica / Cierre Trimestral" class="w-full px-3.5 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Fecha & Hora Inicio *</label>
+            <input type="datetime-local" id="form-start" required class="w-full px-3.5 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Fecha & Hora Fin</label>
+            <input type="datetime-local" id="form-end" class="w-full px-3.5 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="form-allday" class="w-4 h-4 text-brand-600 rounded border-slate-300 focus:ring-brand-500">
+          <label for="form-allday" class="text-xs font-semibold text-slate-700">Evento de Jornada Completa</label>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Categoría *</label>
+            <select id="form-category" required class="w-full px-3.5 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none text-sm bg-white">
+              <option value="jornada">🟣 Jornada institucional</option>
+              <option value="cierre">🔴 Cierre de notas</option>
+              <option value="acto">🟠 Acto escolar</option>
+              <option value="reunion">🔵 Reunión</option>
+              <option value="evaluacion">🟢 Evaluación</option>
+              <option value="importante">🟡 Fecha importante</option>
+              <option value="otro">⚪ Otro</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Ubicación / Aula</label>
+            <input type="text" id="form-location" placeholder="Ej: Salón de Actos / Zoom" class="w-full px-3.5 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Descripción / Observaciones</label>
+          <textarea id="form-description" rows="3" placeholder="Detalles o instrucciones para el personal docente..." class="w-full px-3.5 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none text-sm"></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Recordatorio Automático</label>
+            <select id="form-reminder" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs bg-white">
+              <option value="0">El mismo día</option>
+              <option value="1" selected>1 día antes</option>
+              <option value="3">3 días antes</option>
+              <option value="7">7 días antes</option>
+            </select>
+          </div>
+
+          <div class="flex items-center pt-4">
+            <label class="relative inline-flex items-center cursor-pointer gap-2">
+              <input type="checkbox" id="form-important" class="sr-only peer">
+              <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-600"></div>
+              <span class="text-xs font-bold text-red-700">Destacar Importante 🚨</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center pt-3 border-t border-slate-200">
+          <button type="button" id="btn-delete-event" onclick="handleDeleteEvent()" class="hidden px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-bold transition">Eliminar</button>
+          <div class="flex gap-2 ml-auto">
+            <button type="button" onclick="closeModal('modal-event-form')" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition">Cancelar</button>
+            <button type="submit" class="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-bold transition shadow">Guardar Evento</button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Event Detail View -->
+  <div id="modal-event-detail" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100">
+      <div id="detail-header-color" class="p-6 text-white bg-brand-600 relative">
+        <button onclick="closeModal('modal-event-detail')" class="absolute top-4 right-4 text-white/80 hover:text-white text-2xl font-bold">&times;</button>
+        <span id="detail-category-badge" class="px-2 py-0.5 bg-white/20 backdrop-blur-md rounded text-[11px] font-extrabold uppercase tracking-wider mb-2 inline-block">Categoría</span>
+        <h2 id="detail-title" class="text-xl font-bold leading-tight">Título del Evento</h2>
+      </div>
+
+      <div class="p-6 space-y-4 text-sm">
+        <div class="flex items-start gap-3">
+          <span class="text-slate-400 text-lg">📅</span>
+          <div>
+            <div class="font-semibold text-slate-800" id="detail-date">Fecha y Hora</div>
+            <div class="text-xs text-slate-500" id="detail-duration">Duración</div>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-3" id="detail-location-container">
+          <span class="text-slate-400 text-lg">📍</span>
+          <div>
+            <div class="text-xs text-slate-400 font-semibold uppercase">Ubicación</div>
+            <div class="font-medium text-slate-700" id="detail-location">Salón de Actos</div>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-3">
+          <span class="text-slate-400 text-lg">📝</span>
+          <div>
+            <div class="text-xs text-slate-400 font-semibold uppercase">Descripción</div>
+            <div class="text-slate-600 text-xs leading-relaxed whitespace-pre-line" id="detail-description">Sin descripción.</div>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-3 pt-2 border-t border-slate-100 text-xs text-slate-500">
+          <span class="text-slate-400">👤</span>
+          <div>Creado por: <span id="detail-creator" class="font-semibold text-slate-700">Administración</span></div>
+        </div>
+      </div>
+
+      <div class="bg-slate-50 px-6 py-3 border-t border-slate-200 flex justify-end gap-2">
+        <button id="btn-edit-detail" onclick="editCurrentDetailEvent()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-lg transition">Editar Evento</button>
+        <button onclick="closeModal('modal-event-detail')" class="px-4 py-2 border border-slate-300 text-slate-600 text-xs font-semibold rounded-lg hover:bg-slate-100 transition">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Database & Supabase Config Sync -->
+  <div id="modal-config" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 border border-slate-100">
+      <h3 class="text-lg font-bold text-slate-800 mb-2">💾 Configuración de Base de Datos Persistente</h3>
+      <p class="text-xs text-slate-600 mb-4 leading-relaxed">
+        Los datos se están guardando localmente en tu navegador. Si deseas sincronizarlos en tiempo real con una base de datos <strong>Supabase (PostgreSQL)</strong> alojada en la nube para que otros profesores accedan desde otros dispositivos, ingresa las credenciales a continuación:
+      </p>
+
+      <form onsubmit="saveSupabaseCredentials(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Supabase URL</label>
+          <input type="url" id="cfg-supabase-url" placeholder="https://xyz.supabase.co" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-brand-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Supabase Anon Key</label>
+          <input type="password" id="cfg-supabase-key" placeholder="eyJhbGci..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-brand-500">
+        </div>
+
+        <div class="flex justify-end gap-2 pt-4 border-t border-slate-100">
+          <button type="button" onclick="closeModal('modal-config')" class="px-4 py-2 text-xs font-semibold text-slate-600 border rounded-lg hover:bg-slate-50">Cancelar</button>
+          <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition">Guardar y Conectar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    /* ===================================================================
+       STATE MANAGEMENT & SEED DATA ENGINE
+       =================================================================== */
+
+    const CATEGORY_MAP = {
+      jornada: { label: 'Jornada institucional', color: '#8b5cf6', icon: '🟣', class: 'cat-jornada' },
+      cierre: { label: 'Cierre de notas', color: '#ef4444', icon: '🔴', class: 'cat-cierre' },
+      acto: { label: 'Acto escolar', color: '#f97316', icon: '🟠', class: 'cat-acto' },
+      reunion: { label: 'Reunión', color: '#3b82f6', icon: '🔵', class: 'cat-reunion' },
+      evaluacion: { label: 'Evaluación', color: '#10b981', icon: '🟢', class: 'cat-evaluacion' },
+      importante: { label: 'Fecha importante', color: '#f59e0b', icon: '🟡', class: 'cat-importante' },
+      otro: { label: 'Otro', color: '#64748b', icon: '⚪', class: 'cat-otro' }
     };
 
-    const MESES = [
-      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    // Default institutional mock data for initial load
+    const DEFAULT_EVENTS = [
+      {
+        id: 'evt-1',
+        title: 'Jornada Pedagógica Institucional',
+        start: new Date(new Date().setDate(new Date().getDate() + 2)).toISOString().split('T')[0] + 'T08:00',
+        end: new Date(new Date().setDate(new Date().getDate() + 2)).toISOString().split('T')[0] + 'T13:00',
+        allDay: false,
+        category: 'jornada',
+        location: 'SUM Principal',
+        description: 'Análisis del rendimiento académico del primer periodo y planificación curricular.',
+        isImportant: true,
+        reminderDays: 3,
+        createdBy: 'Equipo Directivo'
+      },
+      {
+        id: 'evt-2',
+        title: 'Cierre de Notas - 2º Trimestre',
+        start: new Date(new Date().setDate(new Date().getDate() + 10)).toISOString().split('T')[0] + 'T23:59',
+        end: null,
+        allDay: true,
+        category: 'cierre',
+        location: 'Sistema de Calificaciones',
+        description: 'Último día límite para la carga de notas en la plataforma académica.',
+        isImportant: true,
+        reminderDays: 7,
+        createdBy: 'Secretaría Académica'
+      },
+      {
+        id: 'evt-3',
+        title: 'Acto del Día de la Independencia',
+        start: new Date(new Date().setDate(new Date().getDate() + 5)).toISOString().split('T')[0] + 'T10:00',
+        end: new Date(new Date().setDate(new Date().getDate() + 5)).toISOString().split('T')[0] + 'T12:00',
+        allDay: false,
+        category: 'acto',
+        location: 'Patio Central',
+        description: 'Convocatoria general para docentes, alumnos y familias.',
+        isImportant: false,
+        reminderDays: 1,
+        createdBy: 'Prof. Martínez'
+      },
+      {
+        id: 'evt-4',
+        title: 'Reunión de Departamento de Ciencias',
+        start: new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0] + 'T14:30',
+        end: new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0] + 'T16:00',
+        allDay: false,
+        category: 'reunion',
+        location: 'Sala de Profesores',
+        description: 'Coordinación de exámenes unificados y proyectos de feria de ciencias.',
+        isImportant: false,
+        reminderDays: 1,
+        createdBy: 'Coordinación Ciencias'
+      }
     ];
 
-    const DIAS_SEMANA = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-
-    // Formatear Date a cadena YYYY-MM-DD
-    const formatDateKey = (date) => {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
+    // Global App State
+    let state = {
+      events: [],
+      currentUser: { name: 'Director/a General', role: 'admin' },
+      activeDetailEvent: null,
+      calendar: null,
+      supabaseClient: null
     };
 
-    function App() {
-      // Estado de Supabase o Nube Global compartida
-      const [supabaseUrl, setSupabaseUrl] = useState(() => localStorage.getItem('supabase_url') || '');
-      const [supabaseAnonKey, setSupabaseAnonKey] = useState(() => localStorage.getItem('supabase_anon_key') || '');
-      
-      const [supabaseClient, setSupabaseClient] = useState(null);
-      const [syncStatus, setSyncStatus] = useState('online'); // 'online', 'syncing', 'offline', 'error'
-      const [mensajeSync, setMensajeSync] = useState('Sincronizado Globalmente en Todos los Dispositivos');
-
-      // Estado de Datos
-      const [eventos, setEventos] = useState(() => {
-        const saved = localStorage.getItem('global_eventos');
-        return saved ? JSON.parse(saved) : [];
-      });
-      const [categoriasMap, setCategoriasMap] = useState(() => {
-        const saved = localStorage.getItem('global_categorias');
-        return saved ? JSON.parse(saved) : CATEGORIAS_DEFAULT;
-      });
-      const [notasRapidas, setNotasRapidas] = useState(() => {
-        return localStorage.getItem('global_notas') || '';
-      });
-
-      // Estado Navegación Calendario
-      const [currentDate, setCurrentDate] = useState(new Date());
-      const [vistaModo, setVistaModo] = useState('mes'); // 'mes' o 'lista'
-      
-      // Filtros
-      const [busqueda, setBusqueda] = useState('');
-      const [filtroCategoria, setFiltroCategoria] = useState('todas');
-
-      // Modales
-      const [modalNuevoAbierto, setModalNuevoAbierto] = useState(false);
-      const [eventoEditar, setEventoEditar] = useState(null);
-      const [eventoSeleccionado, setEventoSeleccionado] = useState(null);
-      const [modalColoresAbierto, setModalColoresAbierto] = useState(false);
-      const [modalConfigAbierto, setModalConfigAbierto] = useState(false);
-      const [modalSqlAbierto, setModalSqlAbierto] = useState(false);
-      const [eventoAEliminar, setEventoAEliminar] = useState(null);
-
-      // Sincronización Global con Servidor Compartido
-      const sincronizarTodoGlobal = useCallback(async (datosAEnviar = null) => {
+    // Initialize LocalStorage Persistence & Optional Supabase Sync
+    function initDatabaseEngine() {
+      const storedEvents = localStorage.getItem('institucional_events');
+      if (storedEvents) {
         try {
-          if (supabaseClient) {
-            // Cargar desde Supabase si existe
-            setSyncStatus('syncing');
-            const { data: dataEvs } = await supabaseClient.from('eventos').select('*');
-            if (dataEvs) {
-              const evsFormateados = dataEvs.map(e => ({
-                id: e.id,
-                titulo: e.titulo,
-                fecha: e.fecha,
-                horaInicio: e.hora_inicio || '',
-                horaFin: e.hora_fin || '',
-                jornadaCompleta: e.jornada_completa || false,
-                categoria: e.categoria || 'otro',
-                ubicacion: e.ubicacion || '',
-                descripcion: e.descripcion || '',
-                importante: e.importante || false
-              }));
-              setEventos(evsFormateados);
-              localStorage.setItem('global_eventos', JSON.stringify(evsFormateados));
-            }
+          state.events = JSON.parse(storedEvents);
+        } catch (e) {
+          state.events = DEFAULT_EVENTS;
+        }
+      } else {
+        state.events = DEFAULT_EVENTS;
+        saveToLocalStorage();
+      }
 
-            const { data: dataCats } = await supabaseClient.from('categorias').select('*');
-            if (dataCats && dataCats.length > 0) {
-              const catMapObj = { ...CATEGORIAS_DEFAULT };
-              dataCats.forEach(c => { catMapObj[c.id] = { id: c.id, nombre: c.nombre, hex: c.hex }; });
-              setCategoriasMap(catMapObj);
-              localStorage.setItem('global_categorias', JSON.stringify(catMapObj));
-            }
-
-            const { data: dataNotas } = await supabaseClient.from('notas').select('*').eq('id', 'nota_principal').single();
-            if (dataNotas) {
-              setNotasRapidas(dataNotas.contenido || '');
-              localStorage.setItem('global_notas', dataNotas.contenido || '');
-            }
-            setSyncStatus('online');
-            setMensajeSync('Sincronizado en Tiempo Real (Supabase Nube)');
-          } else {
-            // Sincronización en red local/storage compartible
-            setSyncStatus('online');
-            setMensajeSync('Sincronización Activa en Todos los Dispositivos');
-          }
+      // Check if Supabase keys exist in localStorage
+      const sbUrl = localStorage.getItem('sb_url');
+      const sbKey = localStorage.getItem('sb_key');
+      if (sbUrl && sbKey && window.supabase) {
+        try {
+          state.supabaseClient = window.supabase.createClient(sbUrl, sbKey);
+          document.getElementById('db-status-text').textContent = 'Cloud DB Conectada';
+          document.getElementById('db-indicator-dot').className = 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse';
+          syncFromSupabase();
         } catch (err) {
-          console.error("Error sincronizando:", err);
-          setSyncStatus('online');
+          console.warn("Could not connect to Supabase, fallback to localStorage", err);
         }
-      }, [supabaseClient]);
+      }
+    }
 
-      // Inicializar cliente Supabase si existen URL y Key
-      useEffect(() => {
-        if (supabaseUrl && supabaseAnonKey && window.supabase) {
-          try {
-            const client = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
-            setSupabaseClient(client);
-            setSyncStatus('syncing');
-            setMensajeSync('Conectando a la red compartida Nube...');
-          } catch (err) {
-            console.error("Error iniciando Supabase:", err);
-            setSyncStatus('error');
-            setMensajeSync('Error de credenciales en Supabase');
-          }
+    function saveToLocalStorage() {
+      localStorage.setItem('institucional_events', JSON.stringify(state.events));
+    }
+
+    async function syncToSupabase(eventData, action = 'upsert') {
+      if (!state.supabaseClient) return;
+      try {
+        if (action === 'delete') {
+          await state.supabaseClient.from('events').delete().eq('id', eventData.id);
         } else {
-          setSupabaseClient(null);
-          setSyncStatus('online');
-          setMensajeSync('Nube Compartida Activa');
+          await state.supabaseClient.from('events').upsert([eventData]);
         }
-      }, [supabaseUrl, supabaseAnonKey]);
+      } catch (e) {
+        console.error("Supabase Sync Error:", e);
+      }
+    }
 
-      // Polling automático para mantener a todos los dispositivos actualizados continuamente
-      useEffect(() => {
-        sincronizarTodoGlobal();
-        const interval = setInterval(() => {
-          sincronizarTodoGlobal();
-        }, 5000); // Actualiza automáticamente cada 5 segundos
-        return () => clearInterval(interval);
-      }, [sincronizarTodoGlobal]);
-
-      // Guardar en Storage Local
-      useEffect(() => {
-        localStorage.setItem('global_eventos', JSON.stringify(eventos));
-      }, [eventos]);
-
-      useEffect(() => {
-        localStorage.setItem('global_categorias', JSON.stringify(categoriasMap));
-      }, [categoriasMap]);
-
-      useEffect(() => {
-        localStorage.setItem('global_notas', notasRapidas);
-      }, [notasRapidas]);
-
-      // Guardar o Editar Evento
-      const handleGuardarEvento = async (eventoData, nuevaCategoriaRapida) => {
-        let catFinal = eventoData.categoria;
-
-        if (nuevaCategoriaRapida) {
-          const newCatId = 'cat-' + Date.now();
-          const objNuevaCat = { id: newCatId, nombre: nuevaCategoriaRapida.nombre, hex: nuevaCategoriaRapida.hex };
-          const mapActualizado = { ...categoriasMap, [newCatId]: objNuevaCat };
-          setCategoriasMap(mapActualizado);
-          catFinal = newCatId;
-
-          if (supabaseClient) {
-            try {
-              await supabaseClient.from('categorias').upsert({
-                id: newCatId,
-                nombre: objNuevaCat.nombre,
-                hex: objNuevaCat.hex
-              });
-            } catch (err) {
-              console.error("Error guardando categoría:", err);
-            }
-          }
+    async function syncFromSupabase() {
+      if (!state.supabaseClient) return;
+      try {
+        const { data, error } = await state.supabaseClient.from('events').select('*');
+        if (!error && data && data.length > 0) {
+          state.events = data;
+          saveToLocalStorage();
+          if (state.calendar) state.calendar.refetchEvents();
+          renderSidebarLists();
         }
+      } catch (e) {
+        console.error("Supabase Fetch Error:", e);
+      }
+    }
 
-        const idEvento = eventoData.id || 'ev-' + Date.now();
-        const eventoFinal = {
-          ...eventoData,
-          id: idEvento,
-          categoria: catFinal
+    /* ===================================================================
+       FULLCALENDAR SETUP & INITIALIZATION
+       =================================================================== */
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initDatabaseEngine();
+      updateUserUI();
+      initFullCalendar();
+      renderSidebarLists();
+      checkBrowserNotifications();
+    });
+
+    function initFullCalendar() {
+      const calendarEl = document.getElementById('calendar');
+
+      state.calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'es',
+        firstDay: 1, // Start on Monday
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek'
+        },
+        buttonText: {
+          today: 'Hoy',
+          month: 'Mes',
+          week: 'Semana'
+        },
+        events: function(fetchInfo, successCallback, failureCallback) {
+          const formatted = state.events.map(evt => {
+            const cat = CATEGORY_MAP[evt.category] || CATEGORY_MAP.otro;
+            return {
+              id: evt.id,
+              title: `${evt.isImportant ? '🚨 ' : ''}${cat.icon} ${evt.title}`,
+              start: evt.start,
+              end: evt.end,
+              allDay: evt.allDay,
+              className: cat.class,
+              extendedProps: evt
+            };
+          });
+          successCallback(formatted);
+        },
+        eventClick: function(info) {
+          openDetailModal(info.event.extendedProps);
+        },
+        height: 'auto'
+      });
+
+      state.calendar.render();
+    }
+
+    /* ===================================================================
+       ROLE & USER PERMISSION CONTROLS
+       =================================================================== */
+
+    function switchRole(newRole) {
+      if (newRole === 'admin') {
+        state.currentUser = { name: 'Director/a General', role: 'admin' };
+      } else {
+        state.currentUser = { name: 'Prof. Roberto Gómez', role: 'profesor' };
+      }
+      updateUserUI();
+    }
+
+    function updateUserUI() {
+      document.getElementById('user-name-display').textContent = state.currentUser.name;
+      const roleBadge = document.getElementById('user-role-badge');
+      const btnCreate = document.getElementById('btn-create-event');
+      const btnEditDetail = document.getElementById('btn-edit-detail');
+
+      if (state.currentUser.role === 'admin') {
+        roleBadge.textContent = 'Administrador';
+        roleBadge.className = 'text-[10px] font-bold uppercase tracking-wider text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded inline-block';
+        btnCreate.classList.remove('hidden');
+        if (btnEditDetail) btnEditDetail.classList.remove('hidden');
+      } else {
+        roleBadge.textContent = 'Profesor';
+        roleBadge.className = 'text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded inline-block';
+        btnCreate.classList.add('hidden');
+        if (btnEditDetail) btnEditDetail.classList.add('hidden');
+      }
+    }
+
+    function logout() {
+      if (confirm('¿Desea cerrar la sesión actual?')) {
+        alert('Sesión cerrada. Para volver a ingresar selecciona el rol en la barra superior.');
+      }
+    }
+
+    /* ===================================================================
+       EVENT CRUD OPERATIONS
+       =================================================================== */
+
+    function openCreateModal() {
+      if (state.currentUser.role !== 'admin') {
+        alert('Solo el personal administrador tiene permiso para crear o modificar eventos.');
+        return;
+      }
+      document.getElementById('event-form').reset();
+      document.getElementById('form-event-id').value = '';
+      document.getElementById('modal-form-title').textContent = 'Nuevo Evento Institucional';
+      document.getElementById('btn-delete-event').classList.add('hidden');
+      
+      // Default start time to today at 08:00
+      const now = new Date();
+      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+      document.getElementById('form-start').value = now.toISOString().slice(0, 16);
+
+      openModal('modal-event-form');
+    }
+
+    function handleSaveEvent(e) {
+      e.preventDefault();
+      
+      const id = document.getElementById('form-event-id').value || 'evt-' + Date.now();
+      const title = document.getElementById('form-title').value.trim();
+      const start = document.getElementById('form-start').value;
+      const end = document.getElementById('form-end').value || null;
+      const allDay = document.getElementById('form-allday').checked;
+      const category = document.getElementById('form-category').value;
+      const location = document.getElementById('form-location').value.trim();
+      const description = document.getElementById('form-description').value.trim();
+      const reminderDays = parseInt(document.getElementById('form-reminder').value);
+      const isImportant = document.getElementById('form-important').checked;
+
+      const newEvent = {
+        id,
+        title,
+        start,
+        end,
+        allDay,
+        category,
+        location,
+        description,
+        isImportant,
+        reminderDays,
+        createdBy: state.currentUser.name
+      };
+
+      const index = state.events.findIndex(evt => evt.id === id);
+      if (index >= 0) {
+        state.events[index] = newEvent;
+      } else {
+        state.events.push(newEvent);
+      }
+
+      saveToLocalStorage();
+      syncToSupabase(newEvent, 'upsert');
+
+      if (state.calendar) state.calendar.refetchEvents();
+      renderSidebarLists();
+      closeModal('modal-event-form');
+    }
+
+    function handleDeleteEvent() {
+      const id = document.getElementById('form-event-id').value;
+      if (!id) return;
+
+      if (confirm('¿Está seguro de eliminar este evento institucional? Esta acción no se puede deshacer.')) {
+        const evtObj = state.events.find(e => e.id === id);
+        state.events = state.events.filter(e => e.id !== id);
+        
+        saveToLocalStorage();
+        if (evtObj) syncToSupabase(evtObj, 'delete');
+
+        if (state.calendar) state.calendar.refetchEvents();
+        renderSidebarLists();
+        closeModal('modal-event-form');
+        closeModal('modal-event-detail');
+      }
+    }
+
+    function openDetailModal(evt) {
+      state.activeDetailEvent = evt;
+      const cat = CATEGORY_MAP[evt.category] || CATEGORY_MAP.otro;
+
+      const headerColor = document.getElementById('detail-header-color');
+      headerColor.style.backgroundColor = cat.color;
+
+      document.getElementById('detail-category-badge').textContent = cat.label;
+      document.getElementById('detail-title').textContent = (evt.isImportant ? '🚨 ' : '') + evt.title;
+      
+      const startDate = new Date(evt.start);
+      const formattedDate = startDate.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      const formattedTime = evt.allDay ? 'Jornada Completa' : startDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+      
+      document.getElementById('detail-date').textContent = formattedDate;
+      document.getElementById('detail-duration').textContent = `Hora: ${formattedTime}`;
+      document.getElementById('detail-location').textContent = evt.location || 'No especificada';
+      document.getElementById('detail-description').textContent = evt.description || 'Sin descripción adicional.';
+      document.getElementById('detail-creator').textContent = evt.createdBy || 'Administración';
+
+      const btnEdit = document.getElementById('btn-edit-detail');
+      if (state.currentUser.role === 'admin') {
+        btnEdit.classList.remove('hidden');
+      } else {
+        btnEdit.classList.add('hidden');
+      }
+
+      openModal('modal-event-detail');
+    }
+
+    function editCurrentDetailEvent() {
+      if (!state.activeDetailEvent) return;
+      const evt = state.activeDetailEvent;
+
+      document.getElementById('form-event-id').value = evt.id;
+      document.getElementById('form-title').value = evt.title;
+      document.getElementById('form-start').value = evt.start;
+      document.getElementById('form-end').value = evt.end || '';
+      document.getElementById('form-allday').checked = evt.allDay || false;
+      document.getElementById('form-category').value = evt.category;
+      document.getElementById('form-location').value = evt.location || '';
+      document.getElementById('form-description').value = evt.description || '';
+      document.getElementById('form-reminder').value = evt.reminderDays || 1;
+      document.getElementById('form-important').checked = evt.isImportant || false;
+
+      document.getElementById('modal-form-title').textContent = 'Editar Evento Institucional';
+      document.getElementById('btn-delete-event').classList.remove('hidden');
+
+      closeModal('modal-event-detail');
+      openModal('modal-event-form');
+    }
+
+    /* ===================================================================
+       SIDEBAR & FILTER LOGIC
+       =================================================================== */
+
+    function filterEvents() {
+      const query = document.getElementById('search-input').value.toLowerCase();
+      const catFilter = document.getElementById('filter-category').value;
+      const onlyImportant = document.getElementById('filter-important').checked;
+
+      if (!state.calendar) return;
+
+      const filtered = state.events.filter(evt => {
+        const matchesQuery = evt.title.toLowerCase().includes(query) || (evt.description && evt.description.toLowerCase().includes(query));
+        const matchesCategory = catFilter === 'all' || evt.category === catFilter;
+        const matchesImportant = !onlyImportant || evt.isImportant;
+        return matchesQuery && matchesCategory && matchesImportant;
+      });
+
+      // Update calendar rendering dynamically
+      const calendarEvents = filtered.map(evt => {
+        const cat = CATEGORY_MAP[evt.category] || CATEGORY_MAP.otro;
+        return {
+          id: evt.id,
+          title: `${evt.isImportant ? '🚨 ' : ''}${cat.icon} ${evt.title}`,
+          start: evt.start,
+          end: evt.end,
+          allDay: evt.allDay,
+          className: cat.class,
+          extendedProps: evt
         };
+      });
 
-        setEventos(prev => {
-          const existe = prev.some(e => e.id === idEvento);
-          const nuevoLista = existe ? prev.map(e => e.id === idEvento ? eventoFinal : e) : [...prev, eventoFinal];
-          return nuevoLista;
-        });
-
-        setModalNuevoAbierto(false);
-        setEventoEditar(null);
-
-        if (supabaseClient) {
-          try {
-            await supabaseClient.from('eventos').upsert({
-              id: idEvento,
-              titulo: eventoFinal.titulo,
-              fecha: eventoFinal.fecha,
-              hora_inicio: eventoFinal.horaInicio,
-              hora_fin: eventoFinal.horaFin,
-              jornada_completa: eventoFinal.jornadaCompleta,
-              categoria: eventoFinal.categoria,
-              ubicacion: eventoFinal.ubicacion,
-              descripcion: eventoFinal.descripcion,
-              importante: eventoFinal.importante
-            });
-            setSyncStatus('online');
-          } catch (err) {
-            console.error("Error en Supabase al guardar evento:", err);
-          }
-        }
-      };
-
-      // Eliminar Evento
-      const handleEliminarEvento = async () => {
-        if (!eventoAEliminar) return;
-
-        const id = eventoAEliminar.id;
-        setEventos(prev => prev.filter(e => e.id !== id));
-        setEventoAEliminar(null);
-        setEventoSeleccionado(null);
-
-        if (supabaseClient) {
-          try {
-            await supabaseClient.from('eventos').delete().eq('id', id);
-          } catch (err) {
-            console.error("Error eliminando evento en Supabase:", err);
-          }
-        }
-      };
-
-      // Guardar Notas Rápidas
-      const handleNotasChange = async (texto) => {
-        setNotasRapidas(texto);
-        if (supabaseClient) {
-          try {
-            await supabaseClient.from('notas').upsert({
-              id: 'nota_principal',
-              contenido: texto,
-              updated_at: new Date().toISOString()
-            });
-          } catch (err) {
-            console.error("Error guardando nota rápida:", err);
-          }
-        }
-      };
-
-      // Conectar Supabase desde Modal
-      const guardarCredencialesSupabase = (e) => {
-        e.preventDefault();
-        const urlLimpia = supabaseUrl.trim();
-        const keyLimpia = supabaseAnonKey.trim();
-
-        localStorage.setItem('supabase_url', urlLimpia);
-        localStorage.setItem('supabase_anon_key', keyLimpia);
-
-        setSupabaseUrl(urlLimpia);
-        setSupabaseAnonKey(keyLimpia);
-        setModalConfigAbierto(false);
-      };
-
-      const desactivarSupabase = () => {
-        localStorage.removeItem('supabase_url');
-        localStorage.removeItem('supabase_anon_key');
-        setSupabaseUrl('');
-        setSupabaseAnonKey('');
-        setSupabaseClient(null);
-        setModalConfigAbierto(false);
-      };
-
-      // Navegación de Fecha
-      const mesAnterior = () => {
-        setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
-      };
-      const mesSiguiente = () => {
-        setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
-      };
-      const irAHoy = () => {
-        setCurrentDate(new Date());
-      };
-
-      // Matriz de Días para el Calendario Mensual
-      const diasCalendario = useMemo(() => {
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth();
-
-        const primerDiaMes = new Date(year, month, 1);
-        const ultimoDiaMes = new Date(year, month + 1, 0);
-
-        let diaSemanaInicio = primerDiaMes.getDay();
-        diaSemanaInicio = diaSemanaInicio === 0 ? 6 : diaSemanaInicio - 1;
-
-        const dias = [];
-
-        const diaAnterior = new Date(year, month, 0);
-        const diasMesAnterior = diaAnterior.getDate();
-
-        for (let i = diaSemanaInicio - 1; i >= 0; i--) {
-          const f = new Date(year, month - 1, diasMesAnterior - i);
-          dias.push({ fecha: f, esMesActual: false });
-        }
-
-        for (let i = 1; i <= ultimoDiaMes.getDate(); i++) {
-          const f = new Date(year, month, i);
-          dias.push({ fecha: f, esMesActual: true });
-        }
-
-        const totalPuntos = dias.length;
-        const faltantes = (7 - (totalPuntos % 7)) % 7;
-        for (let i = 1; i <= faltantes; i++) {
-          const f = new Date(year, month + 1, i);
-          dias.push({ fecha: f, esMesActual: false });
-        }
-
-        return dias;
-      }, [currentDate]);
-
-      // Eventos Filtrados por búsqueda y categoría
-      const eventosFiltrados = useMemo(() => {
-        return eventos.filter(ev => {
-          const coincideCat = filtroCategoria === 'todas' || ev.categoria === filtroCategoria;
-          const texto = `${ev.titulo} ${ev.descripcion || ''} ${ev.ubicacion || ''}`.toLowerCase();
-          const coincideBusqueda = texto.includes(busqueda.toLowerCase().trim());
-          return coincideCat && coincideBusqueda;
-        });
-      }, [eventos, filtroCategoria, busqueda]);
-
-      // Próximos eventos
-      const proximosEventos = useMemo(() => {
-        const hoyKey = formatDateKey(new Date());
-        return eventos
-          .filter(e => e.fecha >= hoyKey)
-          .sort((a, b) => a.fecha.localeCompare(b.fecha))
-          .slice(0, 5);
-      }, [eventos]);
-
-      // Eventos importantes
-      const eventosImportantes = useMemo(() => {
-        return eventos
-          .filter(e => e.importante)
-          .sort((a, b) => a.fecha.localeCompare(b.fecha));
-      }, [eventos]);
-
-      return (
-        <div className="min-h-screen flex flex-col w-full overflow-x-hidden">
-          
-          {/* BARRA SUPERIOR E HIGHLIGHTS - ADAPTABLE A TODOS LOS DISPOSITIVOS */}
-          <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
-            <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
-              
-              {/* Logo e Identificador */}
-              <div className="flex items-center space-x-3 w-full sm:w-auto justify-between sm:justify-start">
-                <div className="flex items-center space-x-3">
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 bg-brand-600 rounded-2xl flex items-center justify-center text-white shadow-md shadow-brand-500/20 shrink-0">
-                    <Icon name="calendar" className="w-5 h-5 sm:w-6 sm:h-6" />
-                  </div>
-                  <div>
-                    <h1 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-                      Calendario Institucional
-                      <span className="text-[9px] sm:text-[10px] px-2 py-0.5 bg-brand-50 text-brand-700 font-bold rounded-full border border-brand-200 uppercase tracking-wider">
-                        Compartido Global
-                      </span>
-                    </h1>
-                    <p className="text-[11px] sm:text-xs text-slate-500 font-medium">
-                      Sincronización pública y accesible desde cualquier pantalla
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Estado de Conexión en la Nube */}
-              <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto space-x-2 bg-slate-50 border border-slate-200 rounded-2xl px-3 py-1.5">
-                <div className="flex items-center space-x-2 truncate">
-                  <div className="relative flex h-2.5 w-2.5 shrink-0">
-                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                      syncStatus === 'online' ? 'bg-emerald-400' : syncStatus === 'syncing' ? 'bg-amber-400' : 'bg-rose-400'
-                    }`}></span>
-                    <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
-                      syncStatus === 'online' ? 'bg-emerald-500' : syncStatus === 'syncing' ? 'bg-amber-500' : 'bg-rose-500'
-                    }`}></span>
-                  </div>
-                  <span className="text-[11px] sm:text-xs font-semibold text-slate-700 truncate">
-                    {mensajeSync}
-                  </span>
-                </div>
-                <button 
-                  onClick={() => setModalConfigAbierto(true)}
-                  className="ml-2 px-2 py-1 text-[10px] sm:text-[11px] font-bold text-brand-700 hover:bg-brand-100 bg-brand-50 rounded-lg transition shrink-0"
-                >
-                  {supabaseClient ? 'Ajustes Nube' : 'Config Nube'}
-                </button>
-              </div>
-
-            </div>
-          </header>
-
-          {/* BARRA DE HERRAMIENTAS Y FILTROS - ADAPTABLE */}
-          <div className="bg-white border-b border-slate-200">
-            <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-              
-              {/* Buscador y Filtro por Categoría */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-1">
-                <div className="relative flex-1">
-                  <input 
-                    type="text" 
-                    placeholder="Buscar eventos o lugares..." 
-                    value={busqueda} 
-                    onChange={(e) => setBusqueda(e.target.value)}
-                    className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition"
-                  />
-                  <div className="absolute left-2.5 top-2 text-slate-400">
-                    <Icon name="search" className="w-3.5 h-3.5" />
-                  </div>
-                </div>
-
-                <select 
-                  value={filtroCategoria} 
-                  onChange={(e) => setFiltroCategoria(e.target.value)}
-                  className="px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 transition font-medium text-slate-700"
-                >
-                  <option value="todas">Todas las categorías</option>
-                  {Object.keys(categoriasMap).map(k => (
-                    <option key={k} value={k}>{categoriasMap[k].nombre}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Botones de Vista y Acciones */}
-              <div className="flex items-center justify-between sm:justify-end space-x-2">
-                <div className="bg-slate-100 border border-slate-200 rounded-xl p-1 flex items-center">
-                  <button 
-                    onClick={() => setVistaModo('mes')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                      vistaModo === 'mes' ? 'bg-white text-brand-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    Vista Mes
-                  </button>
-                  <button 
-                    onClick={() => setVistaModo('lista')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                      vistaModo === 'lista' ? 'bg-white text-brand-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    Vista Lista
-                  </button>
-                </div>
-
-                <button 
-                  onClick={() => setModalColoresAbierto(true)}
-                  className="p-2 text-slate-600 hover:text-brand-600 hover:bg-slate-100 rounded-xl transition border border-slate-200"
-                  title="Gestionar Categorías y Colores"
-                >
-                  <Icon name="palette" className="w-4 h-4" />
-                </button>
-
-                <button 
-                  onClick={() => {
-                    setEventoEditar(null);
-                    setModalNuevoAbierto(true);
-                  }}
-                  className="px-3 sm:px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold shadow-md shadow-brand-500/20 transition flex items-center gap-1.5"
-                >
-                  <Icon name="plus" className="w-4 h-4" />
-                  <span>Nuevo Evento</span>
-                </button>
-              </div>
-
-            </div>
-          </div>
-
-          {/* CONTENIDO PRINCIPAL - RESPONSIVO Y TOTALMENTE VISIBLE EN MÓVILES */}
-          <main className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-4 sm:py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
-
-            {/* SECCIÓN CALENDARIO / LISTA (3 COLUMNAS) */}
-            <div className="lg:col-span-3 space-y-4 min-w-0">
-              
-              {/* CONTROLES NAVEGACIÓN MES */}
-              <div className="bg-white p-3 sm:p-4 rounded-2xl shadow-xs border border-slate-200 flex items-center justify-between">
-                <div className="flex items-center space-x-2 sm:space-x-3">
-                  <h2 className="text-base sm:text-xl font-bold text-slate-800 capitalize">
-                    {MESES[currentDate.getMonth()]} {currentDate.getFullYear()}
-                  </h2>
-                  <button 
-                    onClick={irAHoy} 
-                    className="px-2 py-0.5 sm:px-2.5 sm:py-1 text-[11px] sm:text-xs font-semibold bg-brand-50 text-brand-600 hover:bg-brand-100 rounded-lg transition"
-                  >
-                    Hoy
-                  </button>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <button 
-                    onClick={mesAnterior} 
-                    className="p-1.5 sm:p-2 hover:bg-slate-100 rounded-xl text-slate-600 transition"
-                    title="Mes Anterior"
-                  >
-                    <Icon name="chevronLeft" className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </button>
-                  <button 
-                    onClick={mesSiguiente} 
-                    className="p-1.5 sm:p-2 hover:bg-slate-100 rounded-xl text-slate-600 transition"
-                    title="Mes Siguiente"
-                  >
-                    <Icon name="chevronRight" className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* VISTA GRID MENSUAL - COMPATIBLE CON PANTALLAS PEQUEÑAS MEDIANTE SCROLL O VISTA ADAPTADA */}
-              {vistaModo === 'mes' ? (
-                <div className="bg-white rounded-2xl shadow-xs border border-slate-200 overflow-x-auto">
-                  <div className="min-w-[600px] md:min-w-0">
-                    
-                    {/* Días de la Semana Header */}
-                    <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50 text-center text-xs font-bold text-slate-500 py-2.5">
-                      {DIAS_SEMANA.map((dia, idx) => (
-                        <div key={idx}>{dia}</div>
-                      ))}
-                    </div>
-
-                    {/* Grid de Días */}
-                    <div className="grid grid-cols-7 auto-rows-fr gap-px bg-slate-200">
-                      {diasCalendario.map((item, idx) => {
-                        const fechaKey = formatDateKey(item.fecha);
-                        const esHoy = fechaKey === formatDateKey(new Date());
-                        const evsDelDia = eventosFiltrados.filter(e => e.fecha === fechaKey);
-
-                        return (
-                          <div 
-                            key={idx} 
-                            className={`min-h-[90px] sm:min-h-[110px] p-1.5 sm:p-2 bg-white transition flex flex-col justify-between group ${
-                              !item.esMesActual ? 'bg-slate-50/60 text-slate-400' : 'text-slate-700'
-                            }`}
-                          >
-                            <div>
-                              <div className="flex items-center justify-between mb-1">
-                                <span className={`text-[11px] sm:text-xs font-semibold w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center rounded-full ${
-                                  esHoy ? 'bg-brand-600 text-white font-bold' : ''
-                                }`}>
-                                  {item.fecha.getDate()}
-                                </span>
-                                <button 
-                                  onClick={() => {
-                                    setEventoEditar({ fecha: fechaKey });
-                                    setModalNuevoAbierto(true);
-                                  }}
-                                  className="text-slate-300 hover:text-brand-600 sm:opacity-0 group-hover:opacity-100 transition p-0.5"
-                                  title="Añadir evento"
-                                >
-                                  <Icon name="plus" className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-
-                              {/* Tarjetas de eventos del día */}
-                              <div className="space-y-1 max-h-[70px] sm:max-h-[85px] overflow-y-auto">
-                                {evsDelDia.map(ev => {
-                                  const catInfo = categoriasMap[ev.categoria] || CATEGORIAS_DEFAULT.otro;
-                                  return (
-                                    <div 
-                                      key={ev.id}
-                                      onClick={() => setEventoSeleccionado(ev)}
-                                      style={{ borderLeftColor: catInfo.hex }}
-                                      className="p-1 sm:p-1.5 bg-slate-50 hover:bg-slate-100 rounded-lg text-left text-[10px] sm:text-[11px] font-medium border-l-4 cursor-pointer truncate transition group"
-                                    >
-                                      <div className="flex items-center justify-between">
-                                        <span className="truncate font-semibold text-slate-800">{ev.titulo}</span>
-                                        {ev.importante && <span className="text-amber-500 font-bold ml-0.5">★</span>}
-                                      </div>
-                                      {!ev.jornadaCompleta && ev.horaInicio && (
-                                        <span className="text-[9px] sm:text-[10px] text-slate-500 block leading-tight">{ev.horaInicio} hs</span>
-                                      )}
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                /* VISTA EN LISTA */
-                <div className="bg-white rounded-2xl shadow-xs border border-slate-200 p-3 sm:p-4 space-y-3">
-                  <h3 className="text-xs sm:text-sm font-bold text-slate-700 mb-2">Listado de Eventos</h3>
-                  {eventosFiltrados.length === 0 ? (
-                    <p className="text-xs text-slate-400 py-6 text-center">No hay eventos que coincidan con los filtros aplicados.</p>
-                  ) : (
-                    eventosFiltrados.sort((a,b) => new Date(a.fecha) - new Date(b.fecha)).map(ev => {
-                      const cat = categoriasMap[ev.categoria] || CATEGORIAS_DEFAULT.otro;
-                      return (
-                        <div 
-                          key={ev.id} 
-                          onClick={() => setEventoSeleccionado(ev)}
-                          className="p-3 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 cursor-pointer transition"
-                        >
-                          <div className="flex items-start sm:items-center space-x-3">
-                            <span className="w-3 h-3 rounded-full flex-shrink-0 mt-0.5 sm:mt-0" style={{ backgroundColor: cat.hex }} />
-                            <div>
-                              <h4 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                                {ev.titulo}
-                                {ev.importante && <span className="text-amber-500">★</span>}
-                              </h4>
-                              <p className="text-[11px] text-slate-500">
-                                {ev.fecha} {ev.jornadaCompleta ? '• Jornada Completa' : `• ${ev.horaInicio || ''} ${ev.horaFin ? `- ${ev.horaFin}` : ''}`} {ev.ubicacion ? `• ${ev.ubicacion}` : ''}
-                              </p>
-                            </div>
-                          </div>
-                          <span className="text-[10px] font-semibold px-2 py-1 bg-white border rounded-lg text-slate-600 self-start sm:self-auto">
-                            {cat.nombre}
-                          </span>
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* BARRA LATERAL (1 COLUMNA) */}
-            <div className="space-y-4 sm:space-y-6">
-
-              {/* PRÓXIMOS EVENTOS */}
-              <div className="bg-white p-3 sm:p-4 rounded-2xl shadow-xs border border-slate-200 space-y-3">
-                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                  <Icon name="clock" className="w-4 h-4 text-brand-600" /> Próximos Eventos
-                </h3>
-                <div className="space-y-2">
-                  {proximosEventos.length === 0 ? (
-                    <p className="text-xs text-slate-400">Sin eventos agendados próximamente.</p>
-                  ) : (
-                    proximosEventos.map(ev => {
-                      const cat = categoriasMap[ev.categoria] || CATEGORIAS_DEFAULT.otro;
-                      return (
-                        <div 
-                          key={ev.id}
-                          onClick={() => setEventoSeleccionado(ev)}
-                          className="p-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl border-l-4 cursor-pointer transition"
-                          style={{ borderLeftColor: cat.hex }}
-                        >
-                          <h4 className="text-xs font-bold text-slate-800 truncate">{ev.titulo}</h4>
-                          <p className="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5">
-                            <Icon name="calendar" className="w-3 h-3" /> {ev.fecha} {ev.horaInicio ? `(${ev.horaInicio} hs)` : ''}
-                          </p>
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-              </div>
-
-              {/* FECHAS CLAVE Y PRIORITARIAS */}
-              <div className="bg-white p-3 sm:p-4 rounded-2xl shadow-xs border border-slate-200 space-y-3">
-                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                  <Icon name="alertTriangle" className="w-4 h-4 text-amber-500" /> Fechas Importantes 
-                </h3>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {eventosImportantes.length === 0 ? (
-                    <p className="text-xs text-slate-400">No hay eventos marcados como prioritarios.</p>
-                  ) : (
-                    eventosImportantes.map(ev => (
-                      <div 
-                        key={ev.id} 
-                        onClick={() => setEventoSeleccionado(ev)}
-                        className="p-2 bg-amber-50/60 hover:bg-amber-100/60 border border-amber-200/60 rounded-xl cursor-pointer transition"
-                      >
-                        <h4 className="text-xs font-bold text-slate-800 truncate">{ev.titulo}</h4>
-                        <p className="text-[10px] text-slate-500">{ev.fecha}</p>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              {/* BLOC DE NOTAS RÁPIDAS INSTITUCIONALES */}
-              <div className="bg-amber-50/50 p-3 sm:p-4 rounded-2xl border border-amber-200 space-y-2">
-                <h3 className="text-xs font-bold text-amber-900 flex items-center gap-1.5">
-                  <Icon name="stickyNote" className="w-4 h-4 text-amber-700" /> Notas Rápidas Compartidas
-                </h3>
-                <textarea 
-                  value={notasRapidas || ''}
-                  onChange={(e) => handleNotasChange(e.target.value)}
-                  placeholder="Escribí recordatorios generales, pendientes de dirección, etc... Se compartirán con todo el equipo."
-                  className="w-full h-28 bg-transparent text-xs text-slate-700 placeholder-slate-400 resize-none focus:outline-none"
-                />
-              </div>
-
-            </div>
-          </main>
-
-          {/* MODAL DETALLE DE EVENTO */}
-          {eventoSeleccionado && (
-            <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4">
-              <div className="bg-white rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 relative">
-                <button 
-                  onClick={() => setEventoSeleccionado(null)}
-                  className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
-                >
-                  <Icon name="x" className="w-5 h-5" />
-                </button>
-
-                <div className="flex items-center gap-2">
-                  <span 
-                    className="w-3.5 h-3.5 rounded-full" 
-                    style={{ backgroundColor: (categoriasMap[eventoSeleccionado.categoria] || CATEGORIAS_DEFAULT.otro).hex }} 
-                  />
-                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    {(categoriasMap[eventoSeleccionado.categoria] || CATEGORIAS_DEFAULT.otro).nombre}
-                  </span>
-                </div>
-
-                <h3 className="text-base sm:text-lg font-bold text-slate-900">{eventoSeleccionado.titulo}</h3>
-
-                <div className="space-y-1.5 text-xs text-slate-600">
-                  <p className="flex items-center gap-2">
-                    <Icon name="calendar" className="w-4 h-4 text-slate-400" />
-                    <span className="font-semibold">Fecha:</span> {eventoSeleccionado.fecha}
-                  </p>
-                  {!eventoSeleccionado.jornadaCompleta && (
-                    <p className="flex items-center gap-2">
-                      <Icon name="clock" className="w-4 h-4 text-slate-400" />
-                      <span className="font-semibold">Horario:</span> {eventoSeleccionado.horaInicio || '--:--'} hs {eventoSeleccionado.horaFin ? `a ${eventoSeleccionado.horaFin} hs` : ''}
-                    </p>
-                  )}
-                  {eventoSeleccionado.ubicacion && (
-                    <p className="flex items-center gap-2">
-                      <Icon name="school" className="w-4 h-4 text-slate-400" />
-                      <span className="font-semibold">Lugar:</span> {eventoSeleccionado.ubicacion}
-                    </p>
-                  )}
-                </div>
-
-                {eventoSeleccionado.descripcion && (
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs text-slate-700 max-h-32 overflow-y-auto">
-                    {eventoSeleccionado.descripcion}
-                  </div>
-                )}
-
-                <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
-                  <button 
-                    onClick={() => {
-                      setEventoAEliminar(eventoSeleccionado);
-                    }}
-                    className="px-3 py-1.5 text-xs font-semibold bg-red-50 text-red-600 hover:bg-red-100 rounded-lg flex items-center gap-1 transition"
-                  >
-                    <Icon name="trash" className="w-3.5 h-3.5" /> Eliminar
-                  </button>
-                  <button 
-                    onClick={() => {
-                      setEventoEditar(eventoSeleccionado);
-                      setEventoSeleccionado(null);
-                      setModalNuevoAbierto(true);
-                    }}
-                    className="px-3 py-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg flex items-center gap-1 transition"
-                  >
-                    <Icon name="edit" className="w-3.5 h-3.5" /> Editar
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* MODAL CREAR / EDITAR EVENTO */}
-          {modalNuevoAbierto && (
-            <FormularioEventoModal 
-              eventoEditar={eventoEditar} 
-              categoriasMap={categoriasMap}
-              onGuardar={handleGuardarEvento}
-              onCerrar={() => {
-                setModalNuevoAbierto(false);
-                setEventoEditar(null);
-              }}
-            />
-          )}
-
-          {/* MODAL GESTIÓN DE CATEGORÍAS */}
-          {modalColoresAbierto && (
-            <ModalCategorias 
-              categoriasMap={categoriasMap} 
-              setCategoriasMap={setCategoriasMap}
-              supabaseClient={supabaseClient}
-              onCerrar={() => setModalColoresAbierto(false)}
-            />
-          )}
-
-          {/* MODAL CONFIGURACIÓN SUPABASE */}
-          {modalConfigAbierto && (
-            <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4">
-              <div className="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
-                    <Icon name="globe" className="w-5 h-5 text-brand-600" /> Sincronización Nube (Supabase)
-                  </h3>
-                  <button onClick={() => setModalConfigAbierto(false)} className="text-slate-400 hover:text-slate-600">
-                    <Icon name="x" className="w-5 h-5" />
-                  </button>
-                </div>
-
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Ingresa la URL y la Clave Anon de tu proyecto en Supabase para vincular este calendario a una base de datos centralizada.
-                </p>
-
-                <form onSubmit={guardarCredencialesSupabase} className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">URL del Proyecto Supabase</label>
-                    <input 
-                      type="text" 
-                      value={supabaseUrl} 
-                      onChange={(e) => setSupabaseUrl(e.target.value)}
-                      placeholder="https://xyz.supabase.co"
-                      required 
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-brand-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Clave Anon (Publishable Key)</label>
-                    <input 
-                      type="text" 
-                      value={supabaseAnonKey} 
-                      onChange={(e) => setSupabaseAnonKey(e.target.value)}
-                      placeholder="eyJhbGciOiJIUzI1NiIsInR..."
-                      required 
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-brand-500"
-                    />
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pt-2">
-                    <button 
-                      type="button" 
-                      onClick={() => setModalSqlAbierto(true)}
-                      className="text-xs text-brand-600 hover:underline flex items-center gap-1 font-semibold"
-                    >
-                      <Icon name="code" className="w-4 h-4" /> Ver Esquema SQL de Tablas
-                    </button>
-
-                    <div className="flex items-center space-x-2 self-end sm:self-auto">
-                      {supabaseClient && (
-                        <button 
-                          type="button" 
-                          onClick={desactivarSupabase}
-                          className="px-3 py-1.5 text-xs font-semibold bg-red-50 text-red-600 hover:bg-red-100 rounded-xl transition"
-                        >
-                          Desconectar
-                        </button>
-                      )}
-                      <button 
-                        type="submit" 
-                        className="px-4 py-2 text-xs font-semibold bg-brand-600 hover:bg-brand-700 text-white rounded-xl shadow-md transition"
-                      >
-                        Conectar Nube
-                      </button>
-                    </div>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
-
-          {/* MODAL CÓDIGO SQL PARA BASE DE DATOS */}
-          {modalSqlAbierto && (
-            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4">
-              <div className="bg-slate-900 text-slate-100 rounded-2xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                  <h3 className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
-                    <Icon name="code" className="w-4 h-4 text-emerald-400" /> Esquema SQL Completo (Copiar e Insertar en SQL Editor de Supabase)
-                  </h3>
-                  <button onClick={() => setModalSqlAbierto(false)} className="text-slate-400 hover:text-white">
-                    <Icon name="x" className="w-5 h-5" />
-                  </button>
-                </div>
-                <p className="text-xs text-slate-400">
-                  Ejecuta este código en el **SQL Editor** de tu proyecto Supabase para habilitar las tablas y permisos necesarios:
-                </p>
-                <pre className="bg-slate-950 p-3 sm:p-4 rounded-xl text-[10px] sm:text-[11px] font-mono text-emerald-400 overflow-x-auto border border-slate-800 leading-relaxed max-h-80">
-{`-- 1. Tabla de Eventos
-CREATE TABLE IF NOT EXISTS eventos (
-  id TEXT PRIMARY KEY,
-  titulo TEXT NOT NULL,
-  fecha TEXT NOT NULL,
-  hora_inicio TEXT,
-  hora_fin TEXT,
-  jornada_completa BOOLEAN DEFAULT false,
-  categoria TEXT DEFAULT 'otro',
-  ubicacion TEXT,
-  descripcion TEXT,
-  importante BOOLEAN DEFAULT false
-);
-
--- 2. Tabla de Categorías
-CREATE TABLE IF NOT EXISTS categorias (
-  id TEXT PRIMARY KEY,
-  nombre TEXT NOT NULL,
-  hex TEXT NOT NULL
-);
-
--- 3. Tabla de Notas Compartidas
-CREATE TABLE IF NOT EXISTS notas (
-  id TEXT PRIMARY KEY,
-  contenido TEXT,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- 4. Habilitar Seguridad RLS con políticas públicas
-ALTER TABLE eventos ENABLE ROW LEVEL SECURITY;
-ALTER TABLE categorias ENABLE ROW LEVEL SECURITY;
-ALTER TABLE notas ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Acceso total a eventos" ON eventos FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Acceso total a categorias" ON categorias FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Acceso total a notas" ON notas FOR ALL USING (true) WITH CHECK (true);`}
-                </pre>
-              </div>
-            </div>
-          )}
-
-          {/* MODAL CONFIRMAR ELIMINACIÓN */}
-          {eventoAEliminar && (
-            <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4">
-              <div className="bg-white rounded-2xl max-w-sm w-full p-5 sm:p-6 shadow-2xl space-y-4 text-center">
-                <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto">
-                  <Icon name="alertTriangle" className="w-6 h-6" />
-                </div>
-                <h3 className="text-base font-bold text-slate-900">¿Eliminar este evento?</h3>
-                <p className="text-xs text-slate-500">
-                  Se borrará permanentemente "{eventoAEliminar.titulo}". Esta acción actualizará la base compartida para todos los usuarios.
-                </p>
-                <div className="flex items-center justify-center space-x-2 pt-2">
-                  <button 
-                    onClick={() => setEventoAEliminar(null)}
-                    className="px-4 py-2 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition"
-                  >
-                    Cancelar
-                  </button>
-                  <button 
-                    onClick={handleEliminarEvento}
-                    className="px-4 py-2 text-xs font-semibold bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-md transition"
-                  >
-                    Sí, Eliminar
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-        </div>
-      );
+      state.calendar.removeAllEvents();
+      state.calendar.addEventSource(calendarEvents);
     }
 
-    /* COMPONENTE MODAL: FORMULARIO CREAR / EDITAR EVENTO */
-    function FormularioEventoModal({ eventoEditar, categoriasMap, onGuardar, onCerrar }) {
-      const [titulo, setTitulo] = useState(eventoEditar?.titulo || '');
-      const [fecha, setFecha] = useState(eventoEditar?.fecha || formatDateKey(new Date()));
-      const [jornadaCompleta, setJornadaCompleta] = useState(eventoEditar?.jornadaCompleta ?? false);
-      const [horaInicio, setHoraInicio] = useState(eventoEditar?.horaInicio || '08:00');
-      const [horaFin, setHoraFin] = useState(eventoEditar?.horaFin || '12:00');
-      const [categoria, setCategoria] = useState(eventoEditar?.categoria || Object.keys(categoriasMap)[0] || 'otro');
-      const [ubicacion, setUbicacion] = useState(eventoEditar?.ubicacion || '');
-      const [descripcion, setDescripcion] = useState(eventoEditar?.descripcion || '');
-      const [importante, setImportante] = useState(eventoEditar?.importante ?? false);
+    function renderSidebarLists() {
+      // 1. Render Important Events List
+      const importantList = document.getElementById('important-events-list');
+      const importantEvents = state.events.filter(e => e.isImportant);
+      document.getElementById('important-count').textContent = importantEvents.length;
 
-      const [crearCatNueva, setCrearCatNueva] = useState(false);
-      const [nombreNuevaCat, setNombreNuevaCat] = useState('');
-      const [hexNuevaCat, setHexNuevaCat] = useState('#3b82f6');
-
-      const handleSubmit = (e) => {
-        e.preventDefault();
-        let catObjetoNuevo = null;
-        if (crearCatNueva && nombreNuevaCat.trim()) {
-          catObjetoNuevo = { nombre: nombreNuevaCat.trim(), hex: hexNuevaCat };
-        }
-
-        onGuardar({
-          id: eventoEditar?.id,
-          titulo,
-          fecha,
-          jornadaCompleta,
-          horaInicio: jornadaCompleta ? '' : horaInicio,
-          horaFin: jornadaCompleta ? '' : horaFin,
-          categoria,
-          ubicacion,
-          descripcion,
-          importante
-        }, catObjetoNuevo);
-      };
-
-      return (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-sm sm:text-base font-bold text-slate-900">
-                {eventoEditar?.id ? 'Editar Evento' : 'Nuevo Evento Institucional'}
-              </h3>
-              <button onClick={onCerrar} className="text-slate-400 hover:text-slate-600">
-                <Icon name="x" className="w-5 h-5" />
-              </button>
+      if (importantEvents.length === 0) {
+        importantList.innerHTML = `<p class="text-xs text-slate-500 italic p-2">No hay eventos marcados como importantes.</p>`;
+      } else {
+        importantList.innerHTML = importantEvents.map(evt => {
+          const dateStr = new Date(evt.start).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' });
+          return `
+            <div onclick="openDetailModalById('${evt.id}')" class="p-2.5 bg-white rounded-lg border border-red-200 hover:border-red-400 cursor-pointer transition shadow-xs">
+              <div class="font-bold text-xs text-red-900 leading-snug">${evt.title}</div>
+              <div class="text-[11px] text-red-700 mt-1 flex justify-between items-center">
+                <span>📅 ${dateStr}</span>
+                <span class="font-semibold text-[10px] uppercase bg-red-100 text-red-800 px-1.5 py-0.2 rounded">Importante</span>
+              </div>
             </div>
+          `;
+        }).join('');
+      }
 
-            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 text-xs">
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Título del Evento *</label>
-                <input 
-                  type="text" 
-                  value={titulo} 
-                  onChange={(e) => setTitulo(e.target.value)}
-                  required 
-                  placeholder="Ej. Reunión de Equipo Directivo"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500"
-                />
+      // 2. Render Upcoming Events List (Next 7 Days)
+      const upcomingList = document.getElementById('upcoming-events-list');
+      const now = new Date();
+      const in7Days = new Date();
+      in7Days.setDate(now.getDate() + 7);
+
+      const upcomingEvents = state.events.filter(evt => {
+        const evtDate = new Date(evt.start);
+        return evtDate >= now && evtDate <= in7Days;
+      }).sort((a, b) => new Date(a.start) - new Date(b.start));
+
+      if (upcomingEvents.length === 0) {
+        upcomingList.innerHTML = `<p class="text-xs text-slate-400 italic p-2">Sin eventos programados para los próximos 7 días.</p>`;
+      } else {
+        upcomingList.innerHTML = upcomingEvents.map(evt => {
+          const cat = CATEGORY_MAP[evt.category] || CATEGORY_MAP.otro;
+          const dateStr = new Date(evt.start).toLocaleDateString('es-ES', { weekday: 'short', month: 'short', day: 'numeric' });
+          return `
+            <div onclick="openDetailModalById('${evt.id}')" class="p-2 rounded-lg border border-slate-100 hover:bg-slate-50 cursor-pointer transition flex items-center justify-between">
+              <div class="truncate pr-2">
+                <div class="font-semibold text-xs text-slate-800 truncate">${cat.icon} ${evt.title}</div>
+                <div class="text-[10px] text-slate-400">${dateStr}</div>
               </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Fecha *</label>
-                  <input 
-                    type="date" 
-                    value={fecha} 
-                    onChange={(e) => setFecha(e.target.value)}
-                    required 
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Categoría</label>
-                  <select 
-                    value={categoria} 
-                    onChange={(e) => setCategoria(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500"
-                  >
-                    {Object.keys(categoriasMap).map(k => (
-                      <option key={k} value={k}>{categoriasMap[k].nombre}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {!crearCatNueva ? (
-                <button 
-                  type="button" 
-                  onClick={() => setCrearCatNueva(true)}
-                  className="text-[11px] text-brand-600 hover:underline font-semibold flex items-center gap-1"
-                >
-                  <Icon name="plus" className="w-3.5 h-3.5" /> + Crear una nueva categoría rápida
-                </button>
-              ) : (
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-slate-700">Nueva Categoría</span>
-                    <button type="button" onClick={() => setCrearCatNueva(false)} className="text-slate-400">
-                      <Icon name="x" className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input 
-                      type="text" 
-                      placeholder="Nombre de Categoría" 
-                      value={nombreNuevaCat}
-                      onChange={(e) => setNombreNuevaCat(e.target.value)}
-                      className="flex-1 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg"
-                    />
-                    <input 
-                      type="color" 
-                      value={hexNuevaCat}
-                      onChange={(e) => setHexNuevaCat(e.target.value)}
-                      className="w-8 h-8 rounded-lg cursor-pointer border-0"
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div className="flex items-center space-x-2 pt-1">
-                <input 
-                  type="checkbox" 
-                  id="chkJornada" 
-                  checked={jornadaCompleta} 
-                  onChange={(e) => setJornadaCompleta(e.target.checked)}
-                  className="rounded text-brand-600 focus:ring-brand-500"
-                />
-                <label htmlFor="chkJornada" className="font-semibold text-slate-700 cursor-pointer">
-                  Jornada Completa / Sin Hora Fija
-                </label>
-              </div>
-
-              {!jornadaCompleta && (
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-semibold text-slate-700 mb-1">Hora Inicio</label>
-                    <input 
-                      type="time" 
-                      value={horaInicio} 
-                      onChange={(e) => setHoraInicio(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-semibold text-slate-700 mb-1">Hora Fin</label>
-                    <input 
-                      type="time" 
-                      value={horaFin} 
-                      onChange={(e) => setHoraFin(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500"
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Ubicación / Aula / Lugar</label>
-                <input 
-                  type="text" 
-                  value={ubicacion} 
-                  onChange={(e) => setUbicacion(e.target.value)}
-                  placeholder="Ej. Salón de Actos, Zoom, Aula 4"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Detalles / Observaciones</label>
-                <textarea 
-                  value={descripcion} 
-                  onChange={(e) => setDescripcion(e.target.value)}
-                  placeholder="Detalles pedagógicos o administrativos..."
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl h-20 resize-none focus:ring-2 focus:ring-brand-500"
-                />
-              </div>
-
-              <div className="flex items-center space-x-2 pt-1">
-                <input 
-                  type="checkbox" 
-                  id="chkImp" 
-                  checked={importante} 
-                  onChange={(e) => setImportante(e.target.checked)}
-                  className="rounded text-amber-500 focus:ring-amber-400"
-                />
-                <label htmlFor="chkImp" className="font-semibold text-amber-800 cursor-pointer flex items-center gap-1">
-                  ★ Marcar como Fecha Clave / Prioritaria
-                </label>
-              </div>
-
-              <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100">
-                <button 
-                  type="button" 
-                  onClick={onCerrar}
-                  className="px-4 py-2 font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition"
-                >
-                  Cancelar
-                </button>
-                <button 
-                  type="submit" 
-                  className="px-5 py-2 font-semibold bg-brand-600 hover:bg-brand-700 text-white rounded-xl shadow-md transition"
-                >
-                  Guardar Evento
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      );
+              <span class="w-2 h-2 rounded-full shrink-0" style="background-color: ${cat.color}"></span>
+            </div>
+          `;
+        }).join('');
+      }
     }
 
-    /* COMPONENTE MODAL: ADMINISTRAR CATEGORÍAS */
-    function ModalCategorias({ categoriasMap, setCategoriasMap, supabaseClient, onCerrar }) {
-      const [nombreCat, setNombreCat] = useState('');
-      const [colorHex, setColorHex] = useState('#2563eb');
-
-      const handleAgregar = async (e) => {
-        e.preventDefault();
-        if (!nombreCat.trim()) return;
-
-        const newId = 'cat-' + Date.now();
-        const nuevaCat = { id: newId, nombre: nombreCat.trim(), hex: colorHex };
-
-        const nuevoMap = { ...categoriasMap, [newId]: nuevaCat };
-        setCategoriasMap(nuevoMap);
-
-        if (supabaseClient) {
-          try {
-            await supabaseClient.from('categorias').upsert({ id: newId, nombre: nuevaCat.nombre, hex: nuevaCat.hex });
-          } catch (err) {
-            console.error("Error guardando categoría en Supabase:", err);
-          }
-        }
-
-        setNombreCat('');
-      };
-
-      const handleEliminar = async (catId) => {
-        const nuevoMap = { ...categoriasMap };
-        delete nuevoMap[catId];
-        setCategoriasMap(nuevoMap);
-
-        if (supabaseClient) {
-          try {
-            await supabaseClient.from('categorias').delete().eq('id', catId);
-          } catch (err) {
-            console.error("Error borrando categoría en Supabase:", err);
-          }
-        }
-      };
-
-      return (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-sm sm:text-base font-bold text-slate-900">Gestión de Categorías</h3>
-              <button onClick={onCerrar} className="text-slate-400 hover:text-slate-600">
-                <Icon name="x" className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Crear Nueva */}
-            <form onSubmit={handleAgregar} className="flex items-center gap-2">
-              <input 
-                type="text" 
-                placeholder="Nombre de categoría"
-                value={nombreCat}
-                onChange={(e) => setNombreCat(e.target.value)}
-                required
-                className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-brand-500"
-              />
-              <input 
-                type="color" 
-                value={colorHex}
-                onChange={(e) => setColorHex(e.target.value)}
-                className="w-9 h-9 rounded-xl cursor-pointer border-0"
-              />
-              <button 
-                type="submit" 
-                className="px-3 py-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs rounded-xl shadow-xs transition"
-              >
-                Añadir
-              </button>
-            </form>
-
-            {/* Lista Existente */}
-            <div className="space-y-2 max-h-60 overflow-y-auto pt-2">
-              {Object.keys(categoriasMap).map(key => {
-                const cat = categoriasMap[key];
-                return (
-                  <div key={key} className="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-200">
-                    <div className="flex items-center space-x-2">
-                      <span className="w-4 h-4 rounded-full" style={{ backgroundColor: cat.hex }} />
-                      <span className="text-xs font-semibold text-slate-800">{cat.nombre}</span>
-                    </div>
-                    <button 
-                      onClick={() => handleEliminar(key)}
-                      className="text-slate-400 hover:text-red-600 p-1 transition"
-                      title="Eliminar categoría"
-                    >
-                      <Icon name="trash" className="w-4 h-4" />
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      );
+    function openDetailModalById(id) {
+      const evt = state.events.find(e => e.id === id);
+      if (evt) openDetailModal(evt);
     }
 
-    // Renderizar App en el DOM
-    const rootElement = document.getElementById('root');
-    const root = ReactDOM.createRoot(rootElement);
-    root.render(<App />);
+    /* ===================================================================
+       NOTIFICATIONS ENGINE
+       =================================================================== */
+
+    function checkBrowserNotifications() {
+      if (!("Notification" in window)) return;
+
+      const badge = document.getElementById('notif-badge');
+      if (Notification.permission === "granted") {
+        badge.classList.remove('hidden');
+        triggerEventReminders();
+      }
+    }
+
+    document.getElementById('btn-notifications').addEventListener('click', () => {
+      if (!("Notification" in window)) {
+        alert("Este navegador no soporta notificaciones de escritorio.");
+        return;
+      }
+
+      Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+          document.getElementById('notif-badge').classList.remove('hidden');
+          alert("¡Notificaciones activadas! Recibirás alertas sobre jornadas, evaluaciones y cierres de notas.");
+          triggerEventReminders();
+        } else {
+          alert("Las notificaciones fueron bloqueadas en la configuración de tu navegador.");
+        }
+      });
+    });
+
+    function triggerEventReminders() {
+      if (Notification.permission !== "granted") return;
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      
+      state.events.forEach(evt => {
+        const evtDateStr = new Date(evt.start).toISOString().split('T')[0];
+        
+        if (evtDateStr === todayStr) {
+          new Notification(`🏫 Recordatorio Institucional HOY`, {
+            body: `${evt.title} (${evt.location || 'Escuela'})\n${evt.description || ''}`,
+            icon: 'https://cdn-icons-png.flaticon.com/512/3652/3652191.png'
+          });
+        }
+      });
+    }
+
+    /* ===================================================================
+       UI MODAL HELPERS & DB CONFIG
+       =================================================================== */
+
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function toggleConfigModal() {
+      document.getElementById('cfg-supabase-url').value = localStorage.getItem('sb_url') || '';
+      document.getElementById('cfg-supabase-key').value = localStorage.getItem('sb_key') || '';
+      openModal('modal-config');
+    }
+
+    function saveSupabaseCredentials(e) {
+      e.preventDefault();
+      const url = document.getElementById('cfg-supabase-url').value.trim();
+      const key = document.getElementById('cfg-supabase-key').value.trim();
+
+      if (url && key) {
+        localStorage.setItem('sb_url', url);
+        localStorage.setItem('sb_key', key);
+        alert('Credenciales guardadas. Recargando la aplicación para conectar con Supabase...');
+        window.location.reload();
+      } else {
+        localStorage.removeItem('sb_url');
+        localStorage.removeItem('sb_key');
+        alert('Credenciales removidas. La aplicación funcionará en modo de almacenamiento local.');
+        window.location.reload();
+      }
+    }
   </script>
 </body>
 </html>
