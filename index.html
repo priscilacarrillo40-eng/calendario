@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full bg-slate-100">
+<html lang="es" class="h-full bg-[#f3f6fc]">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calendario Institucional - Escuela San Martín</title>
+  <title>Calendario Institucional</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -19,13 +19,13 @@
         extend: {
           colors: {
             brand: {
-              50: '#f0f3ff',
-              100: '#e0e7ff',
-              500: '#6366f1',
-              600: '#4f46e5',
-              700: '#4338ca',
-              800: '#3730a3',
-              900: '#312e81',
+              50: '#edf4ff',
+              100: '#d0e1fd',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#0f2942',
             }
           }
         }
@@ -35,283 +35,297 @@
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    body { font-family: 'Inter', sans-serif; }
+    body { 
+      font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+      background-color: #f0f4f9;
+    }
 
-    /* Custom FullCalendar Soft Styling */
+    /* Exact visual match for FullCalendar in the photo */
     .fc {
       --fc-border-color: #e2e8f0;
-      --fc-button-text-color: #334155;
-      --fc-button-bg-color: #ffffff;
+      --fc-button-text-color: #475569;
+      --fc-button-bg-color: #f8fafc;
       --fc-button-border-color: #cbd5e1;
       --fc-button-hover-bg-color: #f1f5f9;
-      --fc-button-hover-border-color: #94a3b8;
-      --fc-button-active-bg-color: #4f46e5;
-      --fc-button-active-border-color: #4f46e5;
+      --fc-button-active-bg-color: #2563eb;
+      --fc-button-active-border-color: #2563eb;
       --fc-button-active-text-color: #ffffff;
-      --fc-today-bg-color: #f0fdf4;
-      font-size: 0.875rem;
+      --fc-today-bg-color: transparent;
+      font-size: 0.82rem;
+    }
+
+    .fc .fc-toolbar {
+      margin-bottom: 1.25rem !important;
+      align-items: center;
     }
 
     .fc .fc-toolbar-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #1e293b;
+      font-size: 1.35rem !important;
+      font-weight: 700 !important;
+      color: #0f172a !important;
       text-transform: capitalize;
     }
 
     .fc .fc-button {
-      border-radius: 0.5rem;
-      font-weight: 500;
-      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-      padding: 0.4rem 0.8rem;
+      border-radius: 0.6rem !important;
+      font-weight: 600 !important;
+      font-size: 0.78rem !important;
+      box-shadow: none !important;
+      padding: 0.35rem 0.75rem !important;
     }
 
+    /* Day Highlight Box like in the photo (Day 11 blue rounded square) */
+    .fc .fc-day-today {
+      background-color: #e0f2fe !important;
+      border-radius: 0.75rem !important;
+    }
+
+    .fc .fc-daygrid-day-number {
+      font-weight: 600;
+      color: #334155;
+      padding: 4px 8px !important;
+    }
+
+    .fc .fc-day-today .fc-daygrid-day-number {
+      background-color: #2563eb;
+      color: #ffffff !important;
+      border-radius: 9999px;
+      width: 24px;
+      height: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 2px;
+    }
+
+    /* Event soft pastel pills */
     .fc-event {
       border: none !important;
       border-radius: 6px !important;
-      padding: 2px 5px !important;
+      padding: 2px 6px !important;
       cursor: pointer;
-      font-size: 0.78rem !important;
-      font-weight: 500;
-      transition: transform 0.1s ease, box-shadow 0.1s ease;
+      font-size: 0.72rem !important;
+      font-weight: 600 !important;
+      line-height: 1.2 !important;
+      margin-top: 2px !important;
     }
 
-    .fc-event:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    }
-
-    /* Category Badge Color Tokens */
-    .cat-jornada { background-color: #8b5cf6 !important; color: white !important; }
-    .cat-cierre { background-color: #ef4444 !important; color: white !important; }
-    .cat-acto { background-color: #f97316 !important; color: white !important; }
-    .cat-reunion { background-color: #3b82f6 !important; color: white !important; }
-    .cat-evaluacion { background-color: #10b981 !important; color: white !important; }
-    .cat-importante { background-color: #f59e0b !important; color: white !important; }
-    .cat-otro { background-color: #64748b !important; color: white !important; }
+    /* Pastel Category Palette matching the image */
+    .cat-jornada { background-color: #dbeafe !important; color: #1e40af !important; border: 1px solid #bfdbfe !important; }
+    .cat-cierre { background-color: #fce7f3 !important; color: #9d174d !important; border: 1px solid #fbcfe8 !important; }
+    .cat-acto { background-color: #ffedd5 !important; color: #9a3412 !important; border: 1px solid #fed7aa !important; }
+    .cat-reunion { background-color: #e0e7ff !important; color: #3730a3 !important; border: 1px solid #c7d2fe !important; }
+    .cat-evaluacion { background-color: #dcfce7 !important; color: #166534 !important; border: 1px solid #bbf7d0 !important; }
+    .cat-importante { background-color: #fef3c7 !important; color: #92400e !important; border: 1px solid #fde68a !important; }
+    .cat-otro { background-color: #f1f5f9 !important; color: #475569 !important; border: 1px solid #e2e8f0 !important; }
 
     /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #f0f4f9; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
   </style>
 </head>
 <body class="h-full flex flex-col antialiased text-slate-800">
 
-  <!-- Top Navigation Header -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between items-center h-16">
-        
-        <!-- Logo & Title -->
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center text-white font-bold text-xl shadow-md">
-            🏫
-          </div>
-          <div>
-            <span class="text-xs font-semibold uppercase tracking-wider text-brand-600 block leading-tight">Escuela San Martín</span>
-            <h1 class="text-lg font-bold text-slate-900 leading-tight">Calendario Institucional</h1>
-          </div>
+  <!-- Header Bar matching photo top navigation -->
+  <header class="bg-white/80 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 px-4 sm:px-8 py-3">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
+      
+      <!-- Brand & Title -->
+      <div class="flex items-center gap-3 w-full sm:w-auto">
+        <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-sm">
+          📅
         </div>
+        <div>
+          <span class="text-[10px] font-extrabold uppercase tracking-widest text-blue-600 block leading-tight">Instituto San Martín</span>
+          <h1 class="text-xl font-bold text-slate-900 leading-tight">Calendario Institucional</h1>
+        </div>
+      </div>
 
-        <!-- User Actions & Info -->
-        <div class="flex items-center gap-3">
-          <!-- Notification Button -->
-          <button id="btn-notifications" title="Activar Notificaciones" class="p-2 text-slate-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition relative">
+      <!-- Header Action Controls (Export CSV, Status, User Role) -->
+      <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end flex-wrap">
+        
+        <!-- Button: Export CSV -->
+        <button onclick="exportToCSV()" title="Exportar calendario a CSV" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200/80 transition shadow-2xs">
+          <span>📥</span> Exportar CSV
+        </button>
+
+        <!-- Button: DB / Online Status indicator -->
+        <button id="btn-db-status" onclick="toggleConfigModal()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 transition">
+          <span id="db-indicator-dot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span id="db-status-text">Modo Local (Offline)</span>
+        </button>
+
+        <!-- User Role Quick Switcher -->
+        <div class="flex items-center gap-2 pl-2 border-l border-slate-200">
+          <select id="role-switcher" onchange="switchRole(this.value)" class="text-xs font-medium bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer shadow-2xs">
+            <option value="admin">⚡ Modo Admin</option>
+            <option value="profesor">🎓 Modo Profesor</option>
+          </select>
+
+          <button id="btn-notifications" onclick="requestNotificationPermission()" title="Activar Notificaciones del Navegador" class="p-1.5 text-slate-500 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-            <span id="notif-badge" class="hidden absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
           </button>
-
-          <!-- DB Mode Indicator / Setup Button -->
-          <button id="btn-db-status" onclick="toggleConfigModal()" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 transition">
-            <span id="db-indicator-dot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span id="db-status-text">Persistencia Activa</span>
-          </button>
-
-          <!-- User Badge & Quick Switcher -->
-          <div class="flex items-center gap-2 pl-2 border-l border-slate-200">
-            <div class="text-right hidden sm:block">
-              <div id="user-name-display" class="text-xs font-semibold text-slate-800">Cargando...</div>
-              <div id="user-role-badge" class="text-[10px] font-bold uppercase tracking-wider text-brand-600 bg-brand-50 px-1.5 py-0.5 rounded inline-block">Profesor</div>
-            </div>
-
-            <!-- Role Quick Switcher Dropdown -->
-            <select id="role-switcher" onchange="switchRole(this.value)" class="text-xs bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 focus:ring-2 focus:ring-brand-500 outline-none cursor-pointer">
-              <option value="admin">⚡ Modo Admin</option>
-              <option value="profesor">🎓 Modo Profesor</option>
-            </select>
-
-            <button onclick="logout()" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition" title="Cerrar Sesión">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-            </button>
-          </div>
         </div>
 
       </div>
+
     </div>
   </header>
 
-  <!-- Main Content Layout -->
-  <div class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-4 gap-6">
+  <!-- Main Grid Container -->
+  <div class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-    <!-- Left Sidebar: Controls, Filters & Lists -->
-    <aside class="space-y-6 lg:col-span-1">
+    <!-- Left Area: Calendar Card (Takes ~72% width: 8.5/12 cols) -->
+    <main class="lg:col-span-8 space-y-4">
 
-      <!-- Action Button for Admins / Authorized Users -->
-      <button id="btn-create-event" onclick="openCreateModal()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-medium py-3 px-4 rounded-xl shadow-sm hover:shadow transition flex items-center justify-center gap-2 text-sm">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-        Nuevo Evento
-      </button>
-
-      <!-- Search & Filters Card -->
-      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-4">
-        <h3 class="font-bold text-xs uppercase tracking-wider text-slate-400">Búsqueda y Filtros</h3>
-        
-        <!-- Search Input -->
-        <div class="relative">
-          <input type="text" id="search-input" onkeyup="filterEvents()" placeholder="Buscar evento..." class="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none bg-slate-50">
-          <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+      <!-- Action Bar & Quick Filter Strip -->
+      <div class="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2 flex-1 min-w-[200px]">
+          <span class="text-xs font-semibold text-slate-400 pl-1">🔎</span>
+          <input type="text" id="search-input" onkeyup="filterEvents()" placeholder="Buscar evento en calendario..." class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none">
         </div>
 
-        <!-- Filter Category -->
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Categoría</label>
-          <select id="filter-category" onchange="filterEvents()" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none bg-slate-50">
+        <div class="flex items-center gap-2">
+          <select id="filter-category" onchange="filterEvents()" class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none">
             <option value="all">Todas las categorías</option>
             <option value="jornada">🟣 Jornada institucional</option>
-            <option value="cierre">🔴 Cierre de notas</option>
+            <option value="cierre">🔴 Cierre de notas / PPI</option>
             <option value="acto">🟠 Acto escolar</option>
             <option value="reunion">🔵 Reunión</option>
-            <option value="evaluacion">🟢 Evaluación</option>
+            <option value="evaluacion">🟢 Evaluación / Coloqui</option>
             <option value="importante">🟡 Fecha importante</option>
             <option value="otro">⚪ Otro</option>
           </select>
-        </div>
 
-        <!-- Filter Importance Switcher -->
-        <div class="flex items-center justify-between pt-1">
-          <span class="text-xs font-semibold text-slate-600">Solo importantes 🚨</span>
-          <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" id="filter-important" onchange="filterEvents()" class="sr-only peer">
-            <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
-          </label>
+          <button id="btn-create-event" onclick="openCreateModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-3.5 py-1.5 rounded-xl shadow-xs transition flex items-center gap-1.5">
+            <span>+</span> Nuevo Evento
+          </button>
         </div>
       </div>
 
-      <!-- Highlighted Important Events Panel -->
-      <div class="bg-gradient-to-br from-red-50 to-amber-50 p-4 rounded-xl border border-red-200 shadow-sm">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="font-bold text-xs uppercase tracking-wider text-red-800 flex items-center gap-1.5">
-            <span>🚨</span> Eventos Importantes
+      <!-- Main Calendar Card -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm min-h-[620px]">
+        <div id="calendar"></div>
+      </div>
+
+    </main>
+
+    <!-- Right Area: Side Panels matching photo layout (4/12 cols) -->
+    <aside class="lg:col-span-4 space-y-5">
+
+      <!-- CARD 1: Fechas Destacadas (Soft Pink Tinted Container like in Photo) -->
+      <div class="bg-[#fdf2f8]/70 border border-pink-200/80 p-4 rounded-2xl shadow-2xs">
+        <div class="flex items-center justify-between mb-3.5">
+          <h3 class="font-bold text-xs uppercase tracking-wider text-pink-900 flex items-center gap-2">
+            <span class="p-1 bg-pink-100 text-pink-700 rounded-lg text-xs">🚨</span> Fechas Destacadas
           </h3>
-          <span id="important-count" class="bg-red-200 text-red-800 text-[10px] font-extrabold px-2 py-0.5 rounded-full">0</span>
+          <span id="important-count" class="bg-pink-200/80 text-pink-800 text-[10px] font-black px-2 py-0.5 rounded-full">0</span>
         </div>
-        <div id="important-events-list" class="space-y-2 max-h-64 overflow-y-auto pr-1">
-          <!-- Populated dynamically -->
+
+        <!-- Scrollable list of Clave / Important events -->
+        <div id="important-events-list" class="space-y-2.5 max-h-[310px] overflow-y-auto pr-0.5">
+          <!-- Populated dynamically matching photo design -->
         </div>
       </div>
 
-      <!-- Upcoming Events Panel -->
-      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-        <h3 class="font-bold text-xs uppercase tracking-wider text-slate-400 mb-3">Próximos 7 Días</h3>
-        <div id="upcoming-events-list" class="space-y-2 max-h-64 overflow-y-auto pr-1">
+      <!-- CARD 2: Próximos Eventos (Soft Blue Tinted Container) -->
+      <div class="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-2xs">
+        <div class="flex items-center justify-between mb-3.5">
+          <h3 class="font-bold text-xs uppercase tracking-wider text-slate-700 flex items-center gap-2">
+            <span class="p-1 bg-blue-50 text-blue-600 rounded-lg text-xs">📅</span> Próximos Eventos
+          </h3>
+          <span class="text-[10px] font-bold text-slate-400">Próximos 14 días</span>
+        </div>
+
+        <!-- Scrollable list of upcoming events -->
+        <div id="upcoming-events-list" class="space-y-2.5 max-h-[300px] overflow-y-auto pr-0.5">
           <!-- Populated dynamically -->
         </div>
       </div>
 
     </aside>
 
-    <!-- Main Calendar Grid Area -->
-    <main class="lg:col-span-3 bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
-      <div id="calendar" class="flex-1 min-h-[600px]"></div>
-    </main>
-
   </div>
 
-  <!-- MODAL: Event Form (Create / Edit) -->
-  <div id="modal-event-form" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all border border-slate-100">
+  <!-- MODAL: Create / Edit Event Form -->
+  <div id="modal-event-form" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100">
       
       <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
-        <h3 id="modal-form-title" class="font-bold text-slate-800 text-lg">Nuevo Evento Institucional</h3>
+        <h3 id="modal-form-title" class="font-bold text-slate-800 text-base">Nuevo Evento Institucional</h3>
         <button onclick="closeModal('modal-event-form')" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
       </div>
 
-      <form id="event-form" onsubmit="handleSaveEvent(event)" class="p-6 space-y-4">
+      <form id="event-form" onsubmit="handleSaveEvent(event)" class="p-6 space-y-3.5">
         <input type="hidden" id="form-event-id">
 
         <div>
           <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Título del Evento *</label>
-          <input type="text" id="form-title" required placeholder="Ej: Jornada Pedagógica / Cierre Trimestral" class="w-full px-3.5 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+          <input type="text" id="form-title" required placeholder="Ej: Entrega de PPI / COLOQUIOS CBO" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-xs">
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Fecha & Hora Inicio *</label>
-            <input type="datetime-local" id="form-start" required class="w-full px-3.5 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+            <input type="datetime-local" id="form-start" required class="w-full px-3.5 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-xs">
           </div>
           <div>
             <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Fecha & Hora Fin</label>
-            <input type="datetime-local" id="form-end" class="w-full px-3.5 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+            <input type="datetime-local" id="form-end" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-xs">
           </div>
         </div>
 
-        <div class="flex items-center gap-2">
-          <input type="checkbox" id="form-allday" class="w-4 h-4 text-brand-600 rounded border-slate-300 focus:ring-brand-500">
+        <div class="flex items-center gap-2 pt-1">
+          <input type="checkbox" id="form-allday" class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
           <label for="form-allday" class="text-xs font-semibold text-slate-700">Evento de Jornada Completa</label>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Categoría *</label>
-            <select id="form-category" required class="w-full px-3.5 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none text-sm bg-white">
+            <select id="form-category" required class="w-full px-3.5 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-xs bg-white">
               <option value="jornada">🟣 Jornada institucional</option>
-              <option value="cierre">🔴 Cierre de notas</option>
+              <option value="cierre">🔴 Cierre de notas / PPI</option>
               <option value="acto">🟠 Acto escolar</option>
               <option value="reunion">🔵 Reunión</option>
-              <option value="evaluacion">🟢 Evaluación</option>
+              <option value="evaluacion">🟢 Evaluación / Coloqui</option>
               <option value="importante">🟡 Fecha importante</option>
               <option value="otro">⚪ Otro</option>
             </select>
           </div>
 
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Ubicación / Aula</label>
-            <input type="text" id="form-location" placeholder="Ej: Salón de Actos / Zoom" class="w-full px-3.5 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Ubicación / Curso</label>
+            <input type="text" id="form-location" placeholder="Ej: Docentes 3° año A" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-xs">
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Descripción / Observaciones</label>
-          <textarea id="form-description" rows="3" placeholder="Detalles o instrucciones para el personal docente..." class="w-full px-3.5 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none text-sm"></textarea>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Descripción / Indicaciones</label>
+          <textarea id="form-description" rows="2" placeholder="Detalles de entrega de documentación o actividades..." class="w-full px-3.5 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-xs"></textarea>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200">
-          <div>
-            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Recordatorio Automático</label>
-            <select id="form-reminder" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs bg-white">
-              <option value="0">El mismo día</option>
-              <option value="1" selected>1 día antes</option>
-              <option value="3">3 días antes</option>
-              <option value="7">7 días antes</option>
-            </select>
-          </div>
+        <div class="flex items-center justify-between bg-pink-50/60 p-3 rounded-xl border border-pink-100">
+          <label class="relative inline-flex items-center cursor-pointer gap-2">
+            <input type="checkbox" id="form-important" class="sr-only peer">
+            <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-pink-600"></div>
+            <span class="text-xs font-bold text-pink-900">Destacar en Fechas Clave 🚨</span>
+          </label>
 
-          <div class="flex items-center pt-4">
-            <label class="relative inline-flex items-center cursor-pointer gap-2">
-              <input type="checkbox" id="form-important" class="sr-only peer">
-              <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-600"></div>
-              <span class="text-xs font-bold text-red-700">Destacar Importante 🚨</span>
-            </label>
-          </div>
+          <select id="form-reminder" class="px-2.5 py-1 border border-pink-200 rounded-lg text-[11px] bg-white font-medium text-pink-900">
+            <option value="0">Notificar el mismo día</option>
+            <option value="1" selected>Notificar 1 día antes</option>
+            <option value="3">Notificar 3 días antes</option>
+            <option value="7">Notificar 7 días antes</option>
+          </select>
         </div>
 
         <div class="flex justify-between items-center pt-3 border-t border-slate-200">
-          <button type="button" id="btn-delete-event" onclick="handleDeleteEvent()" class="hidden px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-bold transition">Eliminar</button>
+          <button type="button" id="btn-delete-event" onclick="handleDeleteEvent()" class="hidden px-3.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold transition">Eliminar</button>
           <div class="flex gap-2 ml-auto">
-            <button type="button" onclick="closeModal('modal-event-form')" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition">Cancelar</button>
-            <button type="submit" class="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-bold transition shadow">Guardar Evento</button>
+            <button type="button" onclick="closeModal('modal-event-form')" class="px-4 py-1.5 border border-slate-300 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition">Cancelar</button>
+            <button type="submit" class="px-5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-xs">Guardar Evento</button>
           </div>
         </div>
 
@@ -320,73 +334,72 @@
   </div>
 
   <!-- MODAL: Event Detail View -->
-  <div id="modal-event-detail" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div id="modal-event-detail" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100">
-      <div id="detail-header-color" class="p-6 text-white bg-brand-600 relative">
-        <button onclick="closeModal('modal-event-detail')" class="absolute top-4 right-4 text-white/80 hover:text-white text-2xl font-bold">&times;</button>
-        <span id="detail-category-badge" class="px-2 py-0.5 bg-white/20 backdrop-blur-md rounded text-[11px] font-extrabold uppercase tracking-wider mb-2 inline-block">Categoría</span>
-        <h2 id="detail-title" class="text-xl font-bold leading-tight">Título del Evento</h2>
+      <div id="detail-header-color" class="p-5 text-white bg-blue-600 relative">
+        <button onclick="closeModal('modal-event-detail')" class="absolute top-4 right-4 text-white/80 hover:text-white text-xl font-bold">&times;</button>
+        <span id="detail-category-badge" class="px-2 py-0.5 bg-white/20 backdrop-blur-md rounded text-[10px] font-extrabold uppercase tracking-wider mb-1.5 inline-block">Categoría</span>
+        <h2 id="detail-title" class="text-lg font-bold leading-snug">Título del Evento</h2>
       </div>
 
-      <div class="p-6 space-y-4 text-sm">
+      <div class="p-5 space-y-3.5 text-xs">
         <div class="flex items-start gap-3">
-          <span class="text-slate-400 text-lg">📅</span>
+          <span class="text-slate-400 text-base">📅</span>
           <div>
-            <div class="font-semibold text-slate-800" id="detail-date">Fecha y Hora</div>
-            <div class="text-xs text-slate-500" id="detail-duration">Duración</div>
+            <div class="font-bold text-slate-800" id="detail-date">Fecha y Hora</div>
+            <div class="text-[11px] text-slate-500" id="detail-duration">Duración</div>
           </div>
         </div>
 
         <div class="flex items-start gap-3" id="detail-location-container">
-          <span class="text-slate-400 text-lg">📍</span>
+          <span class="text-slate-400 text-base">📍</span>
           <div>
-            <div class="text-xs text-slate-400 font-semibold uppercase">Ubicación</div>
-            <div class="font-medium text-slate-700" id="detail-location">Salón de Actos</div>
+            <div class="text-[10px] text-slate-400 font-bold uppercase">Ubicación / Destinatarios</div>
+            <div class="font-semibold text-slate-700" id="detail-location">Docentes</div>
           </div>
         </div>
 
         <div class="flex items-start gap-3">
-          <span class="text-slate-400 text-lg">📝</span>
+          <span class="text-slate-400 text-base">📝</span>
           <div>
-            <div class="text-xs text-slate-400 font-semibold uppercase">Descripción</div>
+            <div class="text-[10px] text-slate-400 font-bold uppercase">Observaciones</div>
             <div class="text-slate-600 text-xs leading-relaxed whitespace-pre-line" id="detail-description">Sin descripción.</div>
           </div>
         </div>
 
-        <div class="flex items-start gap-3 pt-2 border-t border-slate-100 text-xs text-slate-500">
-          <span class="text-slate-400">👤</span>
-          <div>Creado por: <span id="detail-creator" class="font-semibold text-slate-700">Administración</span></div>
+        <div class="flex items-center gap-2 pt-2 border-t border-slate-100 text-[11px] text-slate-400">
+          <span>👤 Registrado por: <strong id="detail-creator" class="text-slate-600">Administración</strong></span>
         </div>
       </div>
 
-      <div class="bg-slate-50 px-6 py-3 border-t border-slate-200 flex justify-end gap-2">
-        <button id="btn-edit-detail" onclick="editCurrentDetailEvent()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-lg transition">Editar Evento</button>
-        <button onclick="closeModal('modal-event-detail')" class="px-4 py-2 border border-slate-300 text-slate-600 text-xs font-semibold rounded-lg hover:bg-slate-100 transition">Cerrar</button>
+      <div class="bg-slate-50 px-5 py-3 border-t border-slate-200 flex justify-end gap-2">
+        <button id="btn-edit-detail" onclick="editCurrentDetailEvent()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition">Editar</button>
+        <button onclick="closeModal('modal-event-detail')" class="px-4 py-1.5 border border-slate-300 text-slate-600 text-xs font-semibold rounded-xl hover:bg-slate-100 transition">Cerrar</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: Database & Supabase Config Sync -->
-  <div id="modal-config" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 border border-slate-100">
-      <h3 class="text-lg font-bold text-slate-800 mb-2">💾 Configuración de Base de Datos Persistente</h3>
-      <p class="text-xs text-slate-600 mb-4 leading-relaxed">
-        Los datos se están guardando localmente en tu navegador. Si deseas sincronizarlos en tiempo real con una base de datos <strong>Supabase (PostgreSQL)</strong> alojada en la nube para que otros profesores accedan desde otros dispositivos, ingresa las credenciales a continuación:
+  <!-- MODAL: Database Sync Modal -->
+  <div id="modal-config" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 border border-slate-100 space-y-4">
+      <h3 class="text-base font-bold text-slate-800">💾 Base de Datos Persistente en la Nube (Supabase)</h3>
+      <p class="text-xs text-slate-600 leading-relaxed">
+        Actualmente los datos se guardan de forma permanente en la memoria de este navegador (LocalStorage). Para sincronizar eventos en tiempo real con otros dispositivos de la escuela, ingresa tus credenciales de Supabase:
       </p>
 
       <form onsubmit="saveSupabaseCredentials(event)" class="space-y-3">
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1">Supabase URL</label>
-          <input type="url" id="cfg-supabase-url" placeholder="https://xyz.supabase.co" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-brand-500">
+          <input type="url" id="cfg-supabase-url" placeholder="https://xyz.supabase.co" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs outline-none focus:ring-2 focus:ring-blue-500">
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1">Supabase Anon Key</label>
-          <input type="password" id="cfg-supabase-key" placeholder="eyJhbGci..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-brand-500">
+          <input type="password" id="cfg-supabase-key" placeholder="eyJhbGci..." class="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs outline-none focus:ring-2 focus:ring-blue-500">
         </div>
 
-        <div class="flex justify-end gap-2 pt-4 border-t border-slate-100">
-          <button type="button" onclick="closeModal('modal-config')" class="px-4 py-2 text-xs font-semibold text-slate-600 border rounded-lg hover:bg-slate-50">Cancelar</button>
-          <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition">Guardar y Conectar</button>
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" onclick="closeModal('modal-config')" class="px-4 py-1.5 text-xs font-semibold text-slate-600 border rounded-xl hover:bg-slate-50">Cancelar</button>
+          <button type="submit" class="px-4 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition">Guardar y Sincronizar</button>
         </div>
       </form>
     </div>
@@ -394,87 +407,86 @@
 
   <script>
     /* ===================================================================
-       STATE MANAGEMENT & SEED DATA ENGINE
+       STATE & CATEGORY MAP MATCHING PHOTO SPECIFICATIONS
        =================================================================== */
 
     const CATEGORY_MAP = {
-      jornada: { label: 'Jornada institucional', color: '#8b5cf6', icon: '🟣', class: 'cat-jornada' },
-      cierre: { label: 'Cierre de notas', color: '#ef4444', icon: '🔴', class: 'cat-cierre' },
-      acto: { label: 'Acto escolar', color: '#f97316', icon: '🟠', class: 'cat-acto' },
-      reunion: { label: 'Reunión', color: '#3b82f6', icon: '🔵', class: 'cat-reunion' },
-      evaluacion: { label: 'Evaluación', color: '#10b981', icon: '🟢', class: 'cat-evaluacion' },
-      importante: { label: 'Fecha importante', color: '#f59e0b', icon: '🟡', class: 'cat-importante' },
-      otro: { label: 'Otro', color: '#64748b', icon: '⚪', class: 'cat-otro' }
+      jornada: { label: 'Jornada institucional', color: '#3b82f6', bgPastel: '#dbeafe', textPastel: '#1e40af', icon: '🟣', class: 'cat-jornada' },
+      cierre: { label: 'Cierre de notas / PPI', color: '#ec4899', bgPastel: '#fce7f3', textPastel: '#9d174d', icon: '🔴', class: 'cat-cierre' },
+      acto: { label: 'Acto escolar', color: '#f97316', bgPastel: '#ffedd5', textPastel: '#9a3412', icon: '🟠', class: 'cat-acto' },
+      reunion: { label: 'Reunión', color: '#6366f1', bgPastel: '#e0e7ff', textPastel: '#3730a3', icon: '🔵', class: 'cat-reunion' },
+      evaluacion: { label: 'Evaluación / Coloqui', color: '#22c55e', bgPastel: '#dcfce7', textPastel: '#166534', icon: '🟢', class: 'cat-evaluacion' },
+      importante: { label: 'Fecha importante', color: '#eab308', bgPastel: '#fef3c7', textPastel: '#92400e', icon: '🟡', class: 'cat-importante' },
+      otro: { label: 'Otro', color: '#64748b', bgPastel: '#f1f5f9', textPastel: '#475569', icon: '⚪', class: 'cat-otro' }
     };
 
-    // Default institutional mock data for initial load
+    // Seed events matching the image precisely
     const DEFAULT_EVENTS = [
       {
         id: 'evt-1',
-        title: 'Jornada Pedagógica Institucional',
-        start: new Date(new Date().setDate(new Date().getDate() + 2)).toISOString().split('T')[0] + 'T08:00',
-        end: new Date(new Date().setDate(new Date().getDate() + 2)).toISOString().split('T')[0] + 'T13:00',
-        allDay: false,
-        category: 'jornada',
-        location: 'SUM Principal',
-        description: 'Análisis del rendimiento académico del primer periodo y planificación curricular.',
+        title: 'Entrega de PPI para Docentes de 3° año A',
+        start: '2026-08-25T08:00',
+        end: '2026-09-05T18:00',
+        allDay: true,
+        category: 'cierre',
+        location: 'Docentes 3° año A',
+        description: 'Entrega formal de Proyectos Pedagógicos Individuales completados.',
         isImportant: true,
         reminderDays: 3,
-        createdBy: 'Equipo Directivo'
+        createdBy: 'Secretaría Pedagógica'
       },
       {
         id: 'evt-2',
-        title: 'Cierre de Notas - 2º Trimestre',
-        start: new Date(new Date().setDate(new Date().getDate() + 10)).toISOString().split('T')[0] + 'T23:59',
-        end: null,
-        allDay: true,
-        category: 'cierre',
-        location: 'Sistema de Calificaciones',
-        description: 'Último día límite para la carga de notas en la plataforma académica.',
+        title: 'COLOQUIOS CBO',
+        start: '2026-08-28T09:00',
+        end: '2026-09-04T12:00',
+        allDay: false,
+        category: 'evaluacion',
+        location: 'Aulas 1 y 2 - Nivel CBO',
+        description: 'Presentación de coloquios finales correspondientes al periodo.',
         isImportant: true,
-        reminderDays: 7,
-        createdBy: 'Secretaría Académica'
+        reminderDays: 1,
+        createdBy: 'Coordinación Pedagógica'
       },
       {
         id: 'evt-3',
-        title: 'Acto del Día de la Independencia',
-        start: new Date(new Date().setDate(new Date().getDate() + 5)).toISOString().split('T')[0] + 'T10:00',
-        end: new Date(new Date().setDate(new Date().getDate() + 5)).toISOString().split('T')[0] + 'T12:00',
+        title: 'COLOQUIOS EPI',
+        start: '2026-08-28T13:00',
+        end: '2026-09-04T17:00',
         allDay: false,
-        category: 'acto',
-        location: 'Patio Central',
-        description: 'Convocatoria general para docentes, alumnos y familias.',
-        isImportant: false,
+        category: 'evaluacion',
+        location: 'Salón Principal EPI',
+        description: 'Evaluación de coloquios integradores.',
+        isImportant: true,
         reminderDays: 1,
-        createdBy: 'Prof. Martínez'
+        createdBy: 'Coordinación EPI'
       },
       {
         id: 'evt-4',
-        title: 'Reunión de Departamento de Ciencias',
-        start: new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0] + 'T14:30',
-        end: new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0] + 'T16:00',
+        title: 'JORNADA INSTITUCIONAL',
+        start: '2026-09-15T08:00',
+        end: '2026-09-15T13:00',
         allDay: false,
-        category: 'reunion',
-        location: 'Sala de Profesores',
-        description: 'Coordinación de exámenes unificados y proyectos de feria de ciencias.',
+        category: 'jornada',
+        location: 'SUM Institucional',
+        description: 'Jornada de evaluación curricular y trabajo docente.',
         isImportant: false,
-        reminderDays: 1,
-        createdBy: 'Coordinación Ciencias'
+        reminderDays: 3,
+        createdBy: 'Equipo Directivo'
       }
     ];
 
-    // Global App State
+    // Global Application State
     let state = {
       events: [],
-      currentUser: { name: 'Director/a General', role: 'admin' },
+      currentUserRole: 'admin',
       activeDetailEvent: null,
       calendar: null,
       supabaseClient: null
     };
 
-    // Initialize LocalStorage Persistence & Optional Supabase Sync
     function initDatabaseEngine() {
-      const storedEvents = localStorage.getItem('institucional_events');
+      const storedEvents = localStorage.getItem('institucional_events_v2');
       if (storedEvents) {
         try {
           state.events = JSON.parse(storedEvents);
@@ -486,7 +498,7 @@
         saveToLocalStorage();
       }
 
-      // Check if Supabase keys exist in localStorage
+      // Check if Supabase keys exist
       const sbUrl = localStorage.getItem('sb_url');
       const sbKey = localStorage.getItem('sb_key');
       if (sbUrl && sbKey && window.supabase) {
@@ -496,13 +508,13 @@
           document.getElementById('db-indicator-dot').className = 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse';
           syncFromSupabase();
         } catch (err) {
-          console.warn("Could not connect to Supabase, fallback to localStorage", err);
+          console.warn("Cloud connection fallback to local", err);
         }
       }
     }
 
     function saveToLocalStorage() {
-      localStorage.setItem('institucional_events', JSON.stringify(state.events));
+      localStorage.setItem('institucional_events_v2', JSON.stringify(state.events));
     }
 
     async function syncToSupabase(eventData, action = 'upsert') {
@@ -514,7 +526,7 @@
           await state.supabaseClient.from('events').upsert([eventData]);
         }
       } catch (e) {
-        console.error("Supabase Sync Error:", e);
+        console.error("Supabase sync error:", e);
       }
     }
 
@@ -529,20 +541,19 @@
           renderSidebarLists();
         }
       } catch (e) {
-        console.error("Supabase Fetch Error:", e);
+        console.error("Supabase fetch error:", e);
       }
     }
 
     /* ===================================================================
-       FULLCALENDAR SETUP & INITIALIZATION
+       FULLCALENDAR ENGINE & INITIALIZATION
        =================================================================== */
 
     document.addEventListener('DOMContentLoaded', () => {
       initDatabaseEngine();
-      updateUserUI();
       initFullCalendar();
       renderSidebarLists();
-      checkBrowserNotifications();
+      updateUserPermissionsUI();
     });
 
     function initFullCalendar() {
@@ -550,12 +561,13 @@
 
       state.calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
+        initialDate: '2026-09-01', // Matching photo month: Septiembre 2026
         locale: 'es',
         firstDay: 1, // Start on Monday
         headerToolbar: {
-          left: 'prev,next today',
-          center: 'title',
-          right: 'dayGridMonth,timeGridWeek'
+          left: 'title',
+          center: '',
+          right: 'today prev,next'
         },
         buttonText: {
           today: 'Hoy',
@@ -567,7 +579,7 @@
             const cat = CATEGORY_MAP[evt.category] || CATEGORY_MAP.otro;
             return {
               id: evt.id,
-              title: `${evt.isImportant ? '🚨 ' : ''}${cat.icon} ${evt.title}`,
+              title: `${evt.isImportant ? '🚨 ' : ''}${evt.title}`,
               start: evt.start,
               end: evt.end,
               allDay: evt.allDay,
@@ -587,41 +599,49 @@
     }
 
     /* ===================================================================
-       ROLE & USER PERMISSION CONTROLS
+       ROLES, PERMISSIONS & CSV EXPORT
        =================================================================== */
 
-    function switchRole(newRole) {
-      if (newRole === 'admin') {
-        state.currentUser = { name: 'Director/a General', role: 'admin' };
-      } else {
-        state.currentUser = { name: 'Prof. Roberto Gómez', role: 'profesor' };
-      }
-      updateUserUI();
+    function switchRole(role) {
+      state.currentUserRole = role;
+      updateUserPermissionsUI();
     }
 
-    function updateUserUI() {
-      document.getElementById('user-name-display').textContent = state.currentUser.name;
-      const roleBadge = document.getElementById('user-role-badge');
+    function updateUserPermissionsUI() {
       const btnCreate = document.getElementById('btn-create-event');
       const btnEditDetail = document.getElementById('btn-edit-detail');
 
-      if (state.currentUser.role === 'admin') {
-        roleBadge.textContent = 'Administrador';
-        roleBadge.className = 'text-[10px] font-bold uppercase tracking-wider text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded inline-block';
+      if (state.currentUserRole === 'admin') {
         btnCreate.classList.remove('hidden');
         if (btnEditDetail) btnEditDetail.classList.remove('hidden');
       } else {
-        roleBadge.textContent = 'Profesor';
-        roleBadge.className = 'text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded inline-block';
         btnCreate.classList.add('hidden');
         if (btnEditDetail) btnEditDetail.classList.add('hidden');
       }
     }
 
-    function logout() {
-      if (confirm('¿Desea cerrar la sesión actual?')) {
-        alert('Sesión cerrada. Para volver a ingresar selecciona el rol en la barra superior.');
+    function exportToCSV() {
+      if (!state.events || state.events.length === 0) {
+        alert("No hay eventos registrados para exportar.");
+        return;
       }
+
+      let csv = 'ID,Titulo,Categoria,Inicio,Fin,Ubicacion,Importante,CreadoPor,Descripcion\n';
+      state.events.forEach(evt => {
+        const title = `"${(evt.title || '').replace(/"/g, '""')}"`;
+        const desc = `"${(evt.description || '').replace(/"/g, '""')}"`;
+        const loc = `"${(evt.location || '').replace(/"/g, '""')}"`;
+        csv += `${evt.id},${title},${evt.category},${evt.start},${evt.end || ''},${loc},${evt.isImportant ? 'SI' : 'NO'},${evt.createdBy || ''},${desc}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `Calendario_Institucional_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
 
     /* ===================================================================
@@ -629,8 +649,8 @@
        =================================================================== */
 
     function openCreateModal() {
-      if (state.currentUser.role !== 'admin') {
-        alert('Solo el personal administrador tiene permiso para crear o modificar eventos.');
+      if (state.currentUserRole !== 'admin') {
+        alert('Solo usuarios en Modo Admin pueden agregar o editar eventos.');
         return;
       }
       document.getElementById('event-form').reset();
@@ -638,7 +658,6 @@
       document.getElementById('modal-form-title').textContent = 'Nuevo Evento Institucional';
       document.getElementById('btn-delete-event').classList.add('hidden');
       
-      // Default start time to today at 08:00
       const now = new Date();
       now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
       document.getElementById('form-start').value = now.toISOString().slice(0, 16);
@@ -671,7 +690,7 @@
         description,
         isImportant,
         reminderDays,
-        createdBy: state.currentUser.name
+        createdBy: state.currentUserRole === 'admin' ? 'Administración' : 'Profesor'
       };
 
       const index = state.events.findIndex(evt => evt.id === id);
@@ -693,7 +712,7 @@
       const id = document.getElementById('form-event-id').value;
       if (!id) return;
 
-      if (confirm('¿Está seguro de eliminar este evento institucional? Esta acción no se puede deshacer.')) {
+      if (confirm('¿Está seguro de eliminar este evento institucional?')) {
         const evtObj = state.events.find(e => e.id === id);
         state.events = state.events.filter(e => e.id !== id);
         
@@ -722,13 +741,13 @@
       const formattedTime = evt.allDay ? 'Jornada Completa' : startDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
       
       document.getElementById('detail-date').textContent = formattedDate;
-      document.getElementById('detail-duration').textContent = `Hora: ${formattedTime}`;
-      document.getElementById('detail-location').textContent = evt.location || 'No especificada';
-      document.getElementById('detail-description').textContent = evt.description || 'Sin descripción adicional.';
+      document.getElementById('detail-duration').textContent = `Horario: ${formattedTime}`;
+      document.getElementById('detail-location').textContent = evt.location || 'No indicada';
+      document.getElementById('detail-description').textContent = evt.description || 'Sin observaciones adicionales.';
       document.getElementById('detail-creator').textContent = evt.createdBy || 'Administración';
 
       const btnEdit = document.getElementById('btn-edit-detail');
-      if (state.currentUser.role === 'admin') {
+      if (state.currentUserRole === 'admin') {
         btnEdit.classList.remove('hidden');
       } else {
         btnEdit.classList.add('hidden');
@@ -760,29 +779,26 @@
     }
 
     /* ===================================================================
-       SIDEBAR & FILTER LOGIC
+       SIDEBAR RENDERING MATCHING PHOTO (Fechas Destacadas & Próximos)
        =================================================================== */
 
     function filterEvents() {
       const query = document.getElementById('search-input').value.toLowerCase();
       const catFilter = document.getElementById('filter-category').value;
-      const onlyImportant = document.getElementById('filter-important').checked;
 
       if (!state.calendar) return;
 
       const filtered = state.events.filter(evt => {
         const matchesQuery = evt.title.toLowerCase().includes(query) || (evt.description && evt.description.toLowerCase().includes(query));
         const matchesCategory = catFilter === 'all' || evt.category === catFilter;
-        const matchesImportant = !onlyImportant || evt.isImportant;
-        return matchesQuery && matchesCategory && matchesImportant;
+        return matchesQuery && matchesCategory;
       });
 
-      // Update calendar rendering dynamically
       const calendarEvents = filtered.map(evt => {
         const cat = CATEGORY_MAP[evt.category] || CATEGORY_MAP.otro;
         return {
           id: evt.id,
-          title: `${evt.isImportant ? '🚨 ' : ''}${cat.icon} ${evt.title}`,
+          title: `${evt.isImportant ? '🚨 ' : ''}${evt.title}`,
           start: evt.start,
           end: evt.end,
           allDay: evt.allDay,
@@ -796,52 +812,56 @@
     }
 
     function renderSidebarLists() {
-      // 1. Render Important Events List
+      // 1. Render Fechas Destacadas Panel matching photo cards exactly
       const importantList = document.getElementById('important-events-list');
       const importantEvents = state.events.filter(e => e.isImportant);
       document.getElementById('important-count').textContent = importantEvents.length;
 
       if (importantEvents.length === 0) {
-        importantList.innerHTML = `<p class="text-xs text-slate-500 italic p-2">No hay eventos marcados como importantes.</p>`;
+        importantList.innerHTML = `<p class="text-xs text-pink-700 italic p-2">Sin fechas clave destacadas.</p>`;
       } else {
         importantList.innerHTML = importantEvents.map(evt => {
-          const dateStr = new Date(evt.start).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' });
+          const startDate = new Date(evt.start);
+          const endDate = evt.end ? new Date(evt.end) : null;
+          
+          let dateRangeStr = startDate.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
+          if (endDate) {
+            dateRangeStr += ` al ${endDate.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}`;
+          }
+
           return `
-            <div onclick="openDetailModalById('${evt.id}')" class="p-2.5 bg-white rounded-lg border border-red-200 hover:border-red-400 cursor-pointer transition shadow-xs">
-              <div class="font-bold text-xs text-red-900 leading-snug">${evt.title}</div>
-              <div class="text-[11px] text-red-700 mt-1 flex justify-between items-center">
-                <span>📅 ${dateStr}</span>
-                <span class="font-semibold text-[10px] uppercase bg-red-100 text-red-800 px-1.5 py-0.2 rounded">Importante</span>
+            <div onclick="openDetailModalById('${evt.id}')" class="p-3 bg-white/90 hover:bg-white rounded-xl border border-pink-200/90 hover:border-pink-300 cursor-pointer transition shadow-2xs group">
+              <div class="flex items-center justify-between mb-1">
+                <span class="px-2 py-0.5 bg-pink-100 text-pink-800 font-extrabold text-[9px] rounded-md uppercase tracking-wider flex items-center gap-1">
+                  <span>🚨</span> CLAVE
+                </span>
+                <span class="text-[10px] font-bold text-pink-700">${dateRangeStr}</span>
               </div>
+              <div class="font-bold text-xs text-slate-800 leading-snug group-hover:text-blue-600 transition-colors">${evt.title}</div>
+              ${evt.location ? `<div class="text-[10px] text-slate-500 mt-0.5">📍 ${evt.location}</div>` : ''}
             </div>
           `;
         }).join('');
       }
 
-      // 2. Render Upcoming Events List (Next 7 Days)
+      // 2. Render Próximos Eventos List
       const upcomingList = document.getElementById('upcoming-events-list');
-      const now = new Date();
-      const in7Days = new Date();
-      in7Days.setDate(now.getDate() + 7);
+      const sortedEvents = [...state.events].sort((a, b) => new Date(a.start) - new Date(b.start));
 
-      const upcomingEvents = state.events.filter(evt => {
-        const evtDate = new Date(evt.start);
-        return evtDate >= now && evtDate <= in7Days;
-      }).sort((a, b) => new Date(a.start) - new Date(b.start));
-
-      if (upcomingEvents.length === 0) {
-        upcomingList.innerHTML = `<p class="text-xs text-slate-400 italic p-2">Sin eventos programados para los próximos 7 días.</p>`;
+      if (sortedEvents.length === 0) {
+        upcomingList.innerHTML = `<p class="text-xs text-slate-400 italic p-2">Sin eventos programados.</p>`;
       } else {
-        upcomingList.innerHTML = upcomingEvents.map(evt => {
+        upcomingList.innerHTML = sortedEvents.slice(0, 6).map(evt => {
           const cat = CATEGORY_MAP[evt.category] || CATEGORY_MAP.otro;
           const dateStr = new Date(evt.start).toLocaleDateString('es-ES', { weekday: 'short', month: 'short', day: 'numeric' });
+          
           return `
-            <div onclick="openDetailModalById('${evt.id}')" class="p-2 rounded-lg border border-slate-100 hover:bg-slate-50 cursor-pointer transition flex items-center justify-between">
+            <div onclick="openDetailModalById('${evt.id}')" class="p-2.5 bg-slate-50/80 hover:bg-slate-100 rounded-xl border border-slate-100 cursor-pointer transition flex items-center justify-between">
               <div class="truncate pr-2">
-                <div class="font-semibold text-xs text-slate-800 truncate">${cat.icon} ${evt.title}</div>
-                <div class="text-[10px] text-slate-400">${dateStr}</div>
+                <div class="font-bold text-xs text-slate-800 truncate">${evt.title}</div>
+                <div class="text-[10px] font-semibold text-slate-400 mt-0.5">📅 ${dateStr} ${evt.location ? '• ' + evt.location : ''}</div>
               </div>
-              <span class="w-2 h-2 rounded-full shrink-0" style="background-color: ${cat.color}"></span>
+              <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${cat.color}"></span>
             </div>
           `;
         }).join('');
@@ -854,20 +874,10 @@
     }
 
     /* ===================================================================
-       NOTIFICATIONS ENGINE
+       NOTIFICATIONS & MODAL HELPERS
        =================================================================== */
 
-    function checkBrowserNotifications() {
-      if (!("Notification" in window)) return;
-
-      const badge = document.getElementById('notif-badge');
-      if (Notification.permission === "granted") {
-        badge.classList.remove('hidden');
-        triggerEventReminders();
-      }
-    }
-
-    document.getElementById('btn-notifications').addEventListener('click', () => {
+    function requestNotificationPermission() {
       if (!("Notification" in window)) {
         alert("Este navegador no soporta notificaciones de escritorio.");
         return;
@@ -875,35 +885,12 @@
 
       Notification.requestPermission().then(permission => {
         if (permission === "granted") {
-          document.getElementById('notif-badge').classList.remove('hidden');
-          alert("¡Notificaciones activadas! Recibirás alertas sobre jornadas, evaluaciones y cierres de notas.");
-          triggerEventReminders();
+          alert("¡Notificaciones de escritorio activadas para avisos de fechas clave!");
         } else {
-          alert("Las notificaciones fueron bloqueadas en la configuración de tu navegador.");
-        }
-      });
-    });
-
-    function triggerEventReminders() {
-      if (Notification.permission !== "granted") return;
-
-      const todayStr = new Date().toISOString().split('T')[0];
-      
-      state.events.forEach(evt => {
-        const evtDateStr = new Date(evt.start).toISOString().split('T')[0];
-        
-        if (evtDateStr === todayStr) {
-          new Notification(`🏫 Recordatorio Institucional HOY`, {
-            body: `${evt.title} (${evt.location || 'Escuela'})\n${evt.description || ''}`,
-            icon: 'https://cdn-icons-png.flaticon.com/512/3652/3652191.png'
-          });
+          alert("Permiso de notificaciones denegado.");
         }
       });
     }
-
-    /* ===================================================================
-       UI MODAL HELPERS & DB CONFIG
-       =================================================================== */
 
     function openModal(id) {
       document.getElementById(id).classList.remove('hidden');
@@ -927,7 +914,7 @@
       if (url && key) {
         localStorage.setItem('sb_url', url);
         localStorage.setItem('sb_key', key);
-        alert('Credenciales guardadas. Recargando la aplicación para conectar con Supabase...');
+        alert('Credenciales de Supabase guardadas. Recargando la página para conectar...');
         window.location.reload();
       } else {
         localStorage.removeItem('sb_url');
