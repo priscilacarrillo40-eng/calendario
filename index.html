@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calendario Institucional</title>
+  <title>Calendario Institucional - Instituto San Martín</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -17,6 +17,9 @@
     tailwind.config = {
       theme: {
         extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          },
           colors: {
             brand: {
               50: '#edf4ff',
@@ -27,6 +30,10 @@
               800: '#1e40af',
               900: '#0f2942',
             }
+          },
+          boxShadow: {
+            'card': '0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03)',
+            'glow': '0 0 15px rgba(37, 99, 235, 0.15)',
           }
         }
       }
@@ -34,83 +41,116 @@
   </script>
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    
     body { 
       font-family: 'Inter', system-ui, -apple-system, sans-serif; 
       background-color: #f0f4f9;
+      color: #1e293b;
     }
 
-    /* Exact visual match for FullCalendar in the photo */
+    /* Exact Visual Match for FullCalendar in the photo */
     .fc {
       --fc-border-color: #e2e8f0;
       --fc-button-text-color: #475569;
-      --fc-button-bg-color: #f8fafc;
+      --fc-button-bg-color: #ffffff;
       --fc-button-border-color: #cbd5e1;
-      --fc-button-hover-bg-color: #f1f5f9;
+      --fc-button-hover-bg-color: #f8fafc;
       --fc-button-active-bg-color: #2563eb;
       --fc-button-active-border-color: #2563eb;
       --fc-button-active-text-color: #ffffff;
       --fc-today-bg-color: transparent;
-      font-size: 0.82rem;
+      font-size: 0.83rem;
     }
 
     .fc .fc-toolbar {
       margin-bottom: 1.25rem !important;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
     }
 
     .fc .fc-toolbar-title {
-      font-size: 1.35rem !important;
-      font-weight: 700 !important;
+      font-size: 1.4rem !important;
+      font-weight: 800 !important;
       color: #0f172a !important;
       text-transform: capitalize;
+      letter-spacing: -0.02em;
     }
 
     .fc .fc-button {
-      border-radius: 0.6rem !important;
+      border-radius: 0.65rem !important;
       font-weight: 600 !important;
       font-size: 0.78rem !important;
-      box-shadow: none !important;
-      padding: 0.35rem 0.75rem !important;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
+      padding: 0.4rem 0.85rem !important;
+      transition: all 0.2s ease;
     }
 
-    /* Day Highlight Box like in the photo (Day 11 blue rounded square) */
+    .fc .fc-button:hover {
+      transform: translateY(-1px);
+    }
+
+    /* Day Highlight Box like in the photo (Day 11 blue rounded square container) */
     .fc .fc-day-today {
       background-color: #e0f2fe !important;
-      border-radius: 0.75rem !important;
+      border-radius: 0.85rem !important;
+      box-shadow: inset 0 0 0 1px #93c5fd;
+    }
+
+    .fc .fc-daygrid-day-frame {
+      padding: 3px;
+      min-height: 85px;
     }
 
     .fc .fc-daygrid-day-number {
-      font-weight: 600;
-      color: #334155;
+      font-weight: 700;
+      color: #475569;
       padding: 4px 8px !important;
+      font-size: 0.8rem;
     }
 
     .fc .fc-day-today .fc-daygrid-day-number {
       background-color: #2563eb;
       color: #ffffff !important;
       border-radius: 9999px;
-      width: 24px;
-      height: 24px;
+      width: 26px;
+      height: 26px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       margin: 2px;
+      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
     }
 
-    /* Event soft pastel pills */
+    .fc-col-header-cell-cushion {
+      font-weight: 700 !important;
+      color: #64748b !important;
+      text-transform: capitalize;
+      font-size: 0.75rem;
+      padding-bottom: 8px !important;
+    }
+
+    /* Event soft pastel pills matching the photo */
     .fc-event {
       border: none !important;
       border-radius: 6px !important;
-      padding: 2px 6px !important;
+      padding: 3px 6px !important;
       cursor: pointer;
       font-size: 0.72rem !important;
       font-weight: 600 !important;
-      line-height: 1.2 !important;
+      line-height: 1.25 !important;
       margin-top: 2px !important;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
 
-    /* Pastel Category Palette matching the image */
+    .fc-event:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+    }
+
+    /* Category Palette matching the image exactly */
     .cat-jornada { background-color: #dbeafe !important; color: #1e40af !important; border: 1px solid #bfdbfe !important; }
     .cat-cierre { background-color: #fce7f3 !important; color: #9d174d !important; border: 1px solid #fbcfe8 !important; }
     .cat-acto { background-color: #ffedd5 !important; color: #9a3412 !important; border: 1px solid #fed7aa !important; }
@@ -123,46 +163,48 @@
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: #f0f4f9; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
   </style>
 </head>
 <body class="h-full flex flex-col antialiased text-slate-800">
 
-  <!-- Header Bar matching photo top navigation -->
+  <!-- Top Navigation Header matching photo layout -->
   <header class="bg-white/80 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 px-4 sm:px-8 py-3">
     <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
       
-      <!-- Brand & Title -->
-      <div class="flex items-center gap-3 w-full sm:w-auto">
-        <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-sm">
+      <!-- Brand Logo & Institutional Title -->
+      <div class="flex items-center gap-3.5 w-full sm:w-auto">
+        <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-xl shadow-md shadow-blue-500/20">
           📅
         </div>
         <div>
           <span class="text-[10px] font-extrabold uppercase tracking-widest text-blue-600 block leading-tight">Instituto San Martín</span>
-          <h1 class="text-xl font-bold text-slate-900 leading-tight">Calendario Institucional</h1>
+          <h1 class="text-xl font-extrabold text-slate-900 leading-tight">Calendario Institucional</h1>
         </div>
       </div>
 
-      <!-- Header Action Controls (Export CSV, Status, User Role) -->
+      <!-- Action Controls (Export CSV, Status Badge, User Role) -->
       <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end flex-wrap">
         
         <!-- Button: Export CSV -->
-        <button onclick="exportToCSV()" title="Exportar calendario a CSV" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200/80 transition shadow-2xs">
+        <button onclick="exportToCSV()" title="Exportar calendario a CSV" class="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200/80 transition shadow-2xs">
           <span>📥</span> Exportar CSV
         </button>
 
-        <!-- Button: DB / Online Status indicator -->
-        <button id="btn-db-status" onclick="toggleConfigModal()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 transition">
+        <!-- Button: DB / Cloud Status Indicator -->
+        <button id="btn-db-status" onclick="toggleConfigModal()" class="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/80 transition">
           <span id="db-indicator-dot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
           <span id="db-status-text">Modo Local (Offline)</span>
         </button>
 
-        <!-- User Role Quick Switcher -->
+        <!-- User Role Switcher -->
         <div class="flex items-center gap-2 pl-2 border-l border-slate-200">
-          <select id="role-switcher" onchange="switchRole(this.value)" class="text-xs font-medium bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer shadow-2xs">
+          <select id="role-switcher" onchange="switchRole(this.value)" class="text-xs font-semibold bg-white border border-slate-300 rounded-xl px-3 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer shadow-2xs">
             <option value="admin">⚡ Modo Admin</option>
             <option value="profesor">🎓 Modo Profesor</option>
           </select>
 
+          <!-- Notifications Bell -->
           <button id="btn-notifications" onclick="requestNotificationPermission()" title="Activar Notificaciones del Navegador" class="p-1.5 text-slate-500 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
           </button>
@@ -176,18 +218,18 @@
   <!-- Main Grid Container -->
   <div class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-    <!-- Left Area: Calendar Card (Takes ~72% width: 8.5/12 cols) -->
+    <!-- Left Main Column: Search Bar & Calendar (Takes ~72% width: 8.5/12 cols) -->
     <main class="lg:col-span-8 space-y-4">
 
-      <!-- Action Bar & Quick Filter Strip -->
+      <!-- Action Bar & Search / Category Filters -->
       <div class="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-2xs flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-2 flex-1 min-w-[200px]">
           <span class="text-xs font-semibold text-slate-400 pl-1">🔎</span>
-          <input type="text" id="search-input" onkeyup="filterEvents()" placeholder="Buscar evento en calendario..." class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none">
+          <input type="text" id="search-input" onkeyup="filterEvents()" placeholder="Buscar evento en el calendario..." class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none">
         </div>
 
         <div class="flex items-center gap-2">
-          <select id="filter-category" onchange="filterEvents()" class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none">
+          <select id="filter-category" onchange="filterEvents()" class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none font-medium">
             <option value="all">Todas las categorías</option>
             <option value="jornada">🟣 Jornada institucional</option>
             <option value="cierre">🔴 Cierre de notas / PPI</option>
@@ -198,29 +240,29 @@
             <option value="otro">⚪ Otro</option>
           </select>
 
-          <button id="btn-create-event" onclick="openCreateModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-3.5 py-1.5 rounded-xl shadow-xs transition flex items-center gap-1.5">
+          <button id="btn-create-event" onclick="openCreateModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-xl shadow-xs transition flex items-center gap-1.5">
             <span>+</span> Nuevo Evento
           </button>
         </div>
       </div>
 
-      <!-- Main Calendar Card -->
-      <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm min-h-[620px]">
+      <!-- Main Calendar Card Container -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-card min-h-[620px]">
         <div id="calendar"></div>
       </div>
 
     </main>
 
-    <!-- Right Area: Side Panels matching photo layout (4/12 cols) -->
+    <!-- Right Sidebar Area matching photo exact layout (3.5/12 cols) -->
     <aside class="lg:col-span-4 space-y-5">
 
-      <!-- CARD 1: Fechas Destacadas (Soft Pink Tinted Container like in Photo) -->
-      <div class="bg-[#fdf2f8]/70 border border-pink-200/80 p-4 rounded-2xl shadow-2xs">
+      <!-- CARD 1: Fechas Destacadas (Soft Pink Tinted Container matching image) -->
+      <div class="bg-[#fdf2f8]/80 border border-pink-200/90 p-4.5 rounded-2xl shadow-2xs">
         <div class="flex items-center justify-between mb-3.5">
-          <h3 class="font-bold text-xs uppercase tracking-wider text-pink-900 flex items-center gap-2">
+          <h3 class="font-extrabold text-xs uppercase tracking-wider text-pink-900 flex items-center gap-2">
             <span class="p-1 bg-pink-100 text-pink-700 rounded-lg text-xs">🚨</span> Fechas Destacadas
           </h3>
-          <span id="important-count" class="bg-pink-200/80 text-pink-800 text-[10px] font-black px-2 py-0.5 rounded-full">0</span>
+          <span id="important-count" class="bg-pink-200/80 text-pink-900 text-[10px] font-black px-2.5 py-0.5 rounded-full">0</span>
         </div>
 
         <!-- Scrollable list of Clave / Important events -->
@@ -230,12 +272,12 @@
       </div>
 
       <!-- CARD 2: Próximos Eventos (Soft Blue Tinted Container) -->
-      <div class="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-2xs">
+      <div class="bg-white border border-slate-200/80 p-4.5 rounded-2xl shadow-2xs">
         <div class="flex items-center justify-between mb-3.5">
-          <h3 class="font-bold text-xs uppercase tracking-wider text-slate-700 flex items-center gap-2">
+          <h3 class="font-extrabold text-xs uppercase tracking-wider text-slate-700 flex items-center gap-2">
             <span class="p-1 bg-blue-50 text-blue-600 rounded-lg text-xs">📅</span> Próximos Eventos
           </h3>
-          <span class="text-[10px] font-bold text-slate-400">Próximos 14 días</span>
+          <span class="text-[10px] font-bold text-slate-400">Agenda escolar</span>
         </div>
 
         <!-- Scrollable list of upcoming events -->
@@ -250,7 +292,7 @@
 
   <!-- MODAL: Create / Edit Event Form -->
   <div id="modal-event-form" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100 animate-in fade-in zoom-in duration-150">
       
       <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
         <h3 id="modal-form-title" class="font-bold text-slate-800 text-base">Nuevo Evento Institucional</h3>
@@ -306,7 +348,7 @@
           <textarea id="form-description" rows="2" placeholder="Detalles de entrega de documentación o actividades..." class="w-full px-3.5 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-xs"></textarea>
         </div>
 
-        <div class="flex items-center justify-between bg-pink-50/60 p-3 rounded-xl border border-pink-100">
+        <div class="flex items-center justify-between bg-pink-50/70 p-3 rounded-xl border border-pink-200/80">
           <label class="relative inline-flex items-center cursor-pointer gap-2">
             <input type="checkbox" id="form-important" class="sr-only peer">
             <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-pink-600"></div>
@@ -335,10 +377,10 @@
 
   <!-- MODAL: Event Detail View -->
   <div id="modal-event-detail" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100 animate-in fade-in zoom-in duration-150">
       <div id="detail-header-color" class="p-5 text-white bg-blue-600 relative">
         <button onclick="closeModal('modal-event-detail')" class="absolute top-4 right-4 text-white/80 hover:text-white text-xl font-bold">&times;</button>
-        <span id="detail-category-badge" class="px-2 py-0.5 bg-white/20 backdrop-blur-md rounded text-[10px] font-extrabold uppercase tracking-wider mb-1.5 inline-block">Categoría</span>
+        <span id="detail-category-badge" class="px-2.5 py-0.5 bg-white/20 backdrop-blur-md rounded-md text-[10px] font-extrabold uppercase tracking-wider mb-2 inline-block">Categoría</span>
         <h2 id="detail-title" class="text-lg font-bold leading-snug">Título del Evento</h2>
       </div>
 
@@ -405,10 +447,8 @@
     </div>
   </div>
 
+  <!-- APPLICATION LOGIC -->
   <script>
-    /* ===================================================================
-       STATE & CATEGORY MAP MATCHING PHOTO SPECIFICATIONS
-       =================================================================== */
 
     const CATEGORY_MAP = {
       jornada: { label: 'Jornada institucional', color: '#3b82f6', bgPastel: '#dbeafe', textPastel: '#1e40af', icon: '🟣', class: 'cat-jornada' },
@@ -420,7 +460,7 @@
       otro: { label: 'Otro', color: '#64748b', bgPastel: '#f1f5f9', textPastel: '#475569', icon: '⚪', class: 'cat-otro' }
     };
 
-    // Seed events matching the image precisely
+    // Default Seed Events matching the reference photo precisely
     const DEFAULT_EVENTS = [
       {
         id: 'evt-1',
@@ -476,7 +516,6 @@
       }
     ];
 
-    // Global Application State
     let state = {
       events: [],
       currentUserRole: 'admin',
@@ -498,7 +537,6 @@
         saveToLocalStorage();
       }
 
-      // Check if Supabase keys exist
       const sbUrl = localStorage.getItem('sb_url');
       const sbKey = localStorage.getItem('sb_key');
       if (sbUrl && sbKey && window.supabase) {
@@ -545,9 +583,6 @@
       }
     }
 
-    /* ===================================================================
-       FULLCALENDAR ENGINE & INITIALIZATION
-       =================================================================== */
 
     document.addEventListener('DOMContentLoaded', () => {
       initDatabaseEngine();
@@ -598,9 +633,6 @@
       state.calendar.render();
     }
 
-    /* ===================================================================
-       ROLES, PERMISSIONS & CSV EXPORT
-       =================================================================== */
 
     function switchRole(role) {
       state.currentUserRole = role;
@@ -644,9 +676,6 @@
       document.body.removeChild(link);
     }
 
-    /* ===================================================================
-       EVENT CRUD OPERATIONS
-       =================================================================== */
 
     function openCreateModal() {
       if (state.currentUserRole !== 'admin') {
@@ -778,9 +807,6 @@
       openModal('modal-event-form');
     }
 
-    /* ===================================================================
-       SIDEBAR RENDERING MATCHING PHOTO (Fechas Destacadas & Próximos)
-       =================================================================== */
 
     function filterEvents() {
       const query = document.getElementById('search-input').value.toLowerCase();
@@ -812,7 +838,7 @@
     }
 
     function renderSidebarLists() {
-      // 1. Render Fechas Destacadas Panel matching photo cards exactly
+      // 1. Fechas Destacadas List (Matching photo design with pink cards and CLAVE badge)
       const importantList = document.getElementById('important-events-list');
       const importantEvents = state.events.filter(e => e.isImportant);
       document.getElementById('important-count').textContent = importantEvents.length;
@@ -844,7 +870,7 @@
         }).join('');
       }
 
-      // 2. Render Próximos Eventos List
+      // 2. Próximos Eventos List
       const upcomingList = document.getElementById('upcoming-events-list');
       const sortedEvents = [...state.events].sort((a, b) => new Date(a.start) - new Date(b.start));
 
@@ -872,10 +898,6 @@
       const evt = state.events.find(e => e.id === id);
       if (evt) openDetailModal(evt);
     }
-
-    /* ===================================================================
-       NOTIFICATIONS & MODAL HELPERS
-       =================================================================== */
 
     function requestNotificationPermission() {
       if (!("Notification" in window)) {
